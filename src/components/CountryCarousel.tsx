@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ArrowRight, Grid2X2, X } from "lucide-react";
+import { Link } from "react-router-dom";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
 import slovakia from "@/assets/countries/slovakia.webp";
@@ -11,17 +12,17 @@ import switzerland from "@/assets/countries/switzerland.webp";
 import moldova from "@/assets/countries/moldova.webp";
 
 const countries = [
-  { name: "Czech Republic", slug: "czech-republic", image: czechRepublic, flag: "/flags/czech-republic.svg", link: "https://tollvignettes.eu/vignette-czechia" },
-  { name: "Slovakia", slug: "slovakia", image: slovakia, flag: "/flags/slovakia.svg", link: "https://tollvignettes.eu/vignette-slovakia" },
-  { name: "Romania", slug: "romania", image: romania, flag: "/flags/romania.svg", link: "https://tollvignettes.eu/vignette-romania" },
-  { name: "Bulgaria", slug: "bulgaria", image: bulgaria, flag: "/flags/bulgaria.svg", link: "https://tollvignettes.eu/vignette-bulgaria" },
-  { name: "Hungary", slug: "hungary", image: hungary, flag: "/flags/hungary.svg", link: "https://tollvignettes.eu/vignette-hungary" },
-  { name: "Slovenia", slug: "slovenia", image: slovenia, flag: "/flags/slovenia.svg", link: "https://tollvignettes.eu/vignette-slovenia" },
-  { name: "Switzerland", slug: "switzerland", image: switzerland, flag: "/flags/switzerland.svg", link: "https://tollvignettes.eu/vignette-switzerland" },
-  { name: "Moldova", slug: "moldova", image: moldova, flag: "/flags/moldova.svg", link: "https://tollvignettes.eu/vignette-moldova" },
+  { name: "Czech Republic", slug: "vignette-czechia", image: czechRepublic, flag: "/flags/czech-republic.svg" },
+  { name: "Slovakia", slug: "vignette-slovakia", image: slovakia, flag: "/flags/slovakia.svg" },
+  { name: "Romania", slug: "vignette-romania", image: romania, flag: "/flags/romania.svg" },
+  { name: "Bulgaria", slug: "vignette-bulgaria", image: bulgaria, flag: "/flags/bulgaria.svg" },
+  { name: "Hungary", slug: "vignette-hungary", image: hungary, flag: "/flags/hungary.svg" },
+  { name: "Slovenia", slug: "vignette-slovenia", image: slovenia, flag: "/flags/slovenia.svg" },
+  { name: "Switzerland", slug: "vignette-switzerland", image: switzerland, flag: "/flags/switzerland.svg" },
+  { name: "Moldova", slug: "vignette-moldova", image: moldova, flag: "/flags/moldova.svg" },
 ];
 
-const CountryCard = ({ country }: { country: typeof countries[0] }) => (
+const CountryCard = ({ country, preventClick }: { country: typeof countries[0]; preventClick?: boolean }) => (
   <div className="relative w-full h-full rounded-2xl overflow-hidden group">
     <img
       src={country.image}
@@ -38,18 +39,17 @@ const CountryCard = ({ country }: { country: typeof countries[0] }) => (
       </div>
     </div>
     <div className="absolute bottom-5 left-5 right-5">
-      <a
-        href={country.link}
-        target="_blank"
-        rel="noopener noreferrer"
+      <Link
+        to={`/${country.slug}`}
         className="flex items-center justify-between w-full bg-primary-foreground rounded-full pl-6 pr-2 py-2 hover:shadow-lg transition-shadow"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { if (preventClick) e.preventDefault(); }}
+        draggable={false}
       >
         <span className="text-sm font-semibold text-foreground">Buy now</span>
         <span className="bg-accent rounded-full p-2">
           <ArrowRight className="w-4 h-4 text-accent-foreground" />
         </span>
-      </a>
+      </Link>
     </div>
   </div>
 );
@@ -61,7 +61,6 @@ const CountryCarousel = () => {
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
   const [hasDragged, setHasDragged] = useState(false);
-  const animFrameRef = useRef<number>(0);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if (!scrollRef.current) return;
@@ -76,12 +75,7 @@ const CountryCarousel = () => {
     e.preventDefault();
     const dx = e.pageX - startX;
     if (Math.abs(dx) > 3) setHasDragged(true);
-    cancelAnimationFrame(animFrameRef.current);
-    animFrameRef.current = requestAnimationFrame(() => {
-      if (scrollRef.current) {
-        scrollRef.current.scrollLeft = scrollLeft - dx;
-      }
-    });
+    scrollRef.current.scrollLeft = scrollLeft - dx;
   }, [isDragging, startX, scrollLeft]);
 
   const handleMouseUp = useCallback(() => {
@@ -89,37 +83,43 @@ const CountryCarousel = () => {
   }, []);
 
   // Touch support
+  const touchStartRef = useRef({ x: 0, scroll: 0 });
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return;
-    setStartX(e.touches[0].pageX);
-    setScrollLeft(scrollRef.current.scrollLeft);
+    touchStartRef.current = { x: e.touches[0].pageX, scroll: scrollRef.current.scrollLeft };
   }, []);
 
   const handleTouchMove = useCallback((e: React.TouchEvent) => {
     if (!scrollRef.current) return;
-    const dx = e.touches[0].pageX - startX;
-    scrollRef.current.scrollLeft = scrollLeft - dx;
-  }, [startX, scrollLeft]);
-
-  useEffect(() => {
-    return () => cancelAnimationFrame(animFrameRef.current);
+    const dx = e.touches[0].pageX - touchStartRef.current.x;
+    scrollRef.current.scrollLeft = touchStartRef.current.scroll - dx;
   }, []);
+
+  // Prevent body scroll when grid is open
+  useEffect(() => {
+    if (showGrid) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [showGrid]);
 
   return (
     <section className="pt-6 pb-16">
-      {/* Grid overlay */}
+      {/* Grid overlay – dark background, no white card */}
       {showGrid && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-6" onClick={() => setShowGrid(false)}>
-          <div className="relative bg-background rounded-3xl p-6 max-w-6xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setShowGrid(false)}
-              className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted transition-colors z-10"
-            >
-              <X className="w-5 h-5 text-foreground" />
-            </button>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-2">
+        <div className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 md:p-8" onClick={() => setShowGrid(false)}>
+          <button
+            onClick={() => setShowGrid(false)}
+            className="absolute top-6 right-6 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          >
+            <X className="w-6 h-6 text-white" />
+          </button>
+          <div className="w-full max-w-7xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {countries.map((country) => (
-                <div key={country.slug} className="h-[320px] md:h-[380px]">
+                <div key={country.slug} className="h-[250px] md:h-[380px]">
                   <CountryCard country={country} />
                 </div>
               ))}
@@ -129,7 +129,7 @@ const CountryCarousel = () => {
       )}
 
       <div className="flex items-start gap-4">
-        {/* Left sidebar - single grid icon */}
+        {/* Left sidebar – single grid icon */}
         <div className="hidden md:flex flex-col items-center pl-6 md:pl-12 pt-2">
           <button
             onClick={() => setShowGrid(true)}
@@ -143,8 +143,8 @@ const CountryCarousel = () => {
         {/* Scrollable cards */}
         <div
           ref={scrollRef}
-          className={`flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide flex-1 pr-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none", scrollBehavior: isDragging ? "auto" : "smooth" }}
+          className={`flex gap-4 overflow-x-auto pb-4 flex-1 pr-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none", WebkitOverflowScrolling: "touch" }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
@@ -155,9 +155,9 @@ const CountryCarousel = () => {
           {countries.map((country) => (
             <div
               key={country.slug}
-              className="relative flex-shrink-0 w-[260px] md:w-[300px] h-[380px] md:h-[420px] snap-start"
+              className="relative flex-shrink-0 w-[260px] md:w-[300px] h-[380px] md:h-[420px]"
             >
-              <CountryCard country={country} />
+              <CountryCard country={country} preventClick={hasDragged} />
             </div>
           ))}
         </div>
