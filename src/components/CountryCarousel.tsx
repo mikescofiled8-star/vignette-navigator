@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback } from "react";
 import { ArrowRight, Grid2X2, LayoutList, Map, Rows3 } from "lucide-react";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
@@ -31,6 +31,27 @@ const viewIcons = [
 const CountryCarousel = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeView, setActiveView] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [startX, setStartX] = useState(0);
+  const [scrollLeft, setScrollLeft] = useState(0);
+
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    setIsDragging(true);
+    setStartX(e.pageX - (scrollRef.current?.offsetLeft || 0));
+    setScrollLeft(scrollRef.current?.scrollLeft || 0);
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging || !scrollRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - scrollRef.current.offsetLeft;
+    const walk = (x - startX) * 1.5;
+    scrollRef.current.scrollLeft = scrollLeft - walk;
+  }, [isDragging, startX, scrollLeft]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
+  }, []);
 
   return (
     <section className="pt-6 pb-16">
@@ -56,13 +77,17 @@ const CountryCarousel = () => {
         {/* Scrollable cards */}
         <div
           ref={scrollRef}
-          className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide flex-1 pr-6"
+          className={`flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-hide flex-1 pr-6 select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
         >
           {countries.map((country) => (
             <div
               key={country.slug}
-              className="relative flex-shrink-0 w-[260px] md:w-[300px] h-[380px] md:h-[420px] rounded-2xl overflow-hidden snap-start group cursor-pointer"
+              className="relative flex-shrink-0 w-[260px] md:w-[300px] h-[380px] md:h-[420px] rounded-2xl overflow-hidden snap-start group"
             >
               <img
                 src={country.image}
