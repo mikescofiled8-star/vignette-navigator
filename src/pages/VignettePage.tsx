@@ -336,15 +336,19 @@ const VignettePage = () => {
             <section className="mb-16">
               <h2 className="text-3xl font-serif mb-4">{data.lorrySection.title}</h2>
               <p className="text-muted-foreground mb-4">{data.lorrySection.intro}</p>
-              <p className="text-sm font-medium mb-2">The {data.name} truck toll is calculated per kilometre and depends on several key factors:</p>
-              <ul className="space-y-2 mb-6">
-                {data.lorrySection.factors.map((factor, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm">
-                    <span className="text-muted-foreground mt-1">•</span>
-                    <span>{factor}</span>
-                  </li>
-                ))}
-              </ul>
+              {data.lorrySection.factors && data.lorrySection.factors.length > 0 && (
+                <>
+                  <p className="text-sm font-medium mb-2">The toll is calculated based on:</p>
+                  <ul className="space-y-2 mb-6">
+                    {data.lorrySection.factors.map((factor, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm">
+                        <span className="text-muted-foreground mt-1">•</span>
+                        <span>{factor}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
               {data.lorrySection.details.split("\n\n").map((paragraph, i) => (
                 <p key={i} className="text-muted-foreground mb-4">{paragraph}</p>
               ))}
@@ -353,6 +357,27 @@ const VignettePage = () => {
                   {data.lorrySection.link.text}
                 </a>
               )}
+            </section>
+          )}
+
+          {/* Bridge Section (Romania) */}
+          {data.bridgeSection && (
+            <section className="mb-16">
+              <h2 className="text-3xl font-serif mb-4">{data.bridgeSection.title}</h2>
+              <p className="text-muted-foreground mb-6">{data.bridgeSection.intro}</p>
+              <div className="space-y-6">
+                {data.bridgeSection.bridges.map((bridge, i) => (
+                  <div key={i}>
+                    <h3 className="text-lg font-semibold mb-2">{bridge.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">{bridge.description}</p>
+                    {bridge.link && (
+                      <a href={bridge.link.url} target="_blank" rel="noopener noreferrer" className="text-sm font-medium underline">
+                        {bridge.link.text}
+                      </a>
+                    )}
+                  </div>
+                ))}
+              </div>
             </section>
           )}
 
