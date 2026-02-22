@@ -8,21 +8,53 @@ export interface FAQ {
   answer: string;
 }
 
+export interface TollRoadRegion {
+  region: string;
+  roads: string[];
+}
+
+export interface NumberedSection {
+  number: string;
+  title: string;
+  description: string;
+}
+
+export interface VehicleClassDetail {
+  name: string;
+  description: string;
+}
+
 export interface CountryData {
   name: string;
   slug: string;
   flag: string;
   heroDescription: string;
   heroTitle: string;
+  numberedSections?: NumberedSection[];
   tollRoadsIntro: string;
+  tollRoadsDetailedIntro?: string;
   tollRoadsList: string[];
+  tollRoadsRegional?: TollRoadRegion[];
+  tollRoadsLegalNote?: string;
   tollFreeIntro?: string;
   tollFreeList?: string[];
   vehicleClassesIntro: string;
   vehicleClasses: string[];
+  vehicleClassDetails?: VehicleClassDetail[];
+  validityPeriodsIntro?: string;
   validityPeriods: { name: string; description: string }[];
+  priceIntro?: string;
+  exchangeRate?: string;
+  exchangeDate?: string;
   priceTables: PriceTable[];
   priceNote: string;
+  lorrySection?: {
+    title: string;
+    intro: string;
+    factors: string[];
+    details: string;
+    link?: { text: string; url: string };
+  };
   faqs: FAQ[];
   neighbourIntro: string;
 }
@@ -287,57 +319,187 @@ export const countryDataMap: Record<string, CountryData> = {
     flag: "/flags/hungary.svg",
     heroDescription: "Vignette & Visa B.V. is an official sales partner of the National Mobile Payment Plc. for the sale of Hungarian e-vignettes.",
     heroTitle: "The easiest way to buy your official Hungary vignette online.",
-    tollRoadsIntro: "Hungary has one of the most developed motorway networks in Central Europe. Vignettes are mandatory on all motorways (M roads) and expressways.",
-    tollRoadsList: [
-      "M0, M1, M2, M3, M4, M5, M6, M7 – Major Budapest connections",
-      "M15, M19, M25, M30, M31, M35 – Regional motorways",
-      "M43, M44, M51, M60, M70, M76, M85, M86 – Extended network",
+    numberedSections: [
+      {
+        number: "01.",
+        title: "Toll in Hungary",
+        description: "Hungary uses a digital vignette system (e-matrica) to collect motorway tolls. Instead of a physical sticker, the Hungary vignette is linked directly to your vehicle's license plate, allowing seamless travel on all toll motorways and expressways. Vehicles are monitored by automatic license plate recognition cameras, so having a valid vignette before entering the motorway is essential to avoid fines.",
+      },
+      {
+        number: "02.",
+        title: "Purchase the Hungary vignette online",
+        description: "The fastest and safest way to buy the Hungary vignette online is through Tollvignettes.eu, an official sales partner of the National Mobile Payment Plc. Simply enter your license plate number, select your validity period, and pay securely by card, PayPal or another method. Your digital vignette is instantly linked to your license plate, and you will receive an email confirmation as proof of validity. There is no sticker required.",
+      },
     ],
-    vehicleClassesIntro: "All motor vehicles up to 3,500 kg require a vignette. Different vehicle types have different toll classes.",
-    vehicleClasses: ["Passenger car (≤ 7 seats) – D1", "Passenger car (8-9 seats) – D2", "Goods vehicle / Motorhome – D2", "Motorcycle – D1M", "Caravan / Trailer – U"],
+    tollRoadsIntro: "Hungary has one of the most developed motorway networks in Central Europe, and most long-distance routes are subject to tolls. To use these roads legally, all drivers must register a digital vignette, which is electronically linked to the vehicle's license plate. There is no physical sticker, and toll enforcement is carried out by automatic camera systems that scan license plates and verify vignette validity in real time.",
+    tollRoadsDetailedIntro: "The toll system applies to motorways (M roads) and several expressways, which connect Budapest with every region of the country and with neighbouring nations such as Austria, Slovakia, Romania, Serbia and Croatia. These routes are essential for holiday travel, business journeys and international transit, so having the correct vignette before entering a tolled section is crucial to avoid fines.",
+    tollRoadsList: [],
+    tollRoadsRegional: [
+      { region: "Pest", roads: [
+        "M0 between M1–M0 junction and M0–11-es út junction",
+        "M1 between Budapest city border and Bicske junction",
+        "M2 between M2–M0 junction and Vác north junction",
+        "M3 between Budapest, Szentmihályi út junction and Hatvan junction",
+        "M31 between Nagytarcsai junction and M3–M31 junction",
+        "M4 between Budapest Liszt Ferenc Nemzetközi Repülőtér junction and Jászberény / Szolnok north junction",
+        "M44 between M44 / Kecskemét north junction and Szentkirályi junction",
+        "M5 between Budapest, Szentlőrinci út junction and Lajosmizse junction",
+        "M51 between M51–M0 junction and M51–M5 junction",
+        "M6 between Budapest, Barackos út junction and Ráckeresztúr junction",
+        "M7 between Budapest city border and Martonvásár junction",
+      ]},
+      { region: "Bács-Kiskun", roads: [
+        "M5 between Örkény junction and Kistelek junction",
+        "M44 between M44 / Kecskemét north junction and Tiszaug / Tiszakürt junction",
+      ]},
+      { region: "Baranya", roads: [
+        "M6 between Bátaszék junction and M6–M60 junction",
+        "M60 between M60–M6 junction and Pécs nyugat junction",
+      ]},
+      { region: "Békés", roads: [
+        "M44 between Szolnok/ Martfű/ Kunszentmárton junction and Békéscsaba-Gyula/ Debrecen-Szeged junction",
+      ]},
+      { region: "Borsod-Abaúj-Zemplén", roads: [
+        "M3 between Füzesabony junction and Polgár junction",
+        "M30 between M3–M30 junction and Tornyosnémeti, country border",
+      ]},
+      { region: "Csongrád-Csanád", roads: [
+        "M5 between Kiskunfélegyháza south junction and Röszke, country border",
+        "M43 between Szeged north junction and Csanádpalota, country border",
+      ]},
+      { region: "Fejér", roads: [
+        "M1 between Herceghalom junction and Tatabánya-Óváros junction",
+        "M6 between Százhalombatta north junction and Paks north junction",
+        "M7 between Pusztazámor junction and Balatonvilágos junction",
+      ]},
+      { region: "Győr-Moson-Sopron", roads: [
+        "M1 between Bábolna junction and Hegyeshalom, country border",
+        "M15 between M15–M1 junction and Rajka, country border",
+        "M19 between M1–M19 junction and Győr centrum junction",
+        "M85 between Győr-nyugat junction and Sopron, country border",
+        "M86 between Répcelak junction and Csorna észak junction",
+      ]},
+      { region: "Hajdú-Bihar", roads: [
+        "M3 between Hejőkürt junction and Nyíregyháza nyugat junction",
+        "M4 between M4–M35 junction and Nagykereki, country border",
+        "M35 between M35–M3 junction and M35–M4 junction",
+      ]},
+      { region: "Heves", roads: [
+        "M25 between M25–M3 junction and Eger",
+        "M3 between Bag junction and Mezőkövesd junction",
+      ]},
+      { region: "Jász-Nagykun-Szolnok", roads: [
+        "M4 between Abony east / Szolnok west junction and Törökszentmiklós west / Szajol junction",
+        "M44 between Lakitelek / Tiszakécske junction and Szarvas / Szentes junction",
+      ]},
+      { region: "Komárom-Esztergom", roads: [
+        "M1 between Szárliget junction and Győr-Ipari Park",
+        "M19 between M1–M19 junction and Győrszentiván junction",
+      ]},
+      { region: "Somogy", roads: [
+        "M7 between Balatonvilágos junction and Zalakomár junction",
+        "M76 between Hollád junction and Keszthely-Fenékpuszta junction",
+      ]},
+      { region: "Szabolcs-Szatmár-Bereg", roads: [
+        "M3 between Hajdúnánás junction and Vásárosnamény junction",
+      ]},
+      { region: "Tolna", roads: [
+        "M6 between Dunaújváros south junction and Pécsvárad junction",
+      ]},
+      { region: "Vas", roads: [
+        "M86 between Szombathely junction and Beled junction",
+      ]},
+      { region: "Veszprém", roads: [
+        "M7 between Polgárdi junction and Siófok east junction",
+      ]},
+      { region: "Zala", roads: [
+        "M7 between Sávoly junction and Letenye, country border",
+        "M70 between M70–M7 junction and Tornyiszentmiklós, country border",
+        "M76 between Balatonszentgyörgy / Balatonberény junction and Keszthely-Fenékpuszta junction",
+      ]},
+    ],
+    tollRoadsLegalNote: "To legally use Hungary's motorways and expressways, your digital vignette must be valid before you enter a toll section. There are no toll booths on these roads, so you cannot pay on the spot. Instead, license plate recognition cameras automatically check every vehicle and issue fines if no active vignette is found.",
+    vehicleClassesIntro: "In Hungary, the e-vignette is required for all motor vehicles up to 3,500 kg, but the type of vehicle determines which vignette category you need. Passenger cars, motorhomes, vans, trailers and buses do not all pay the same fee, each belongs to a different toll class. This means two vehicles under 3,500 kg may still require different vignette types.",
+    vehicleClasses: ["Passenger car (≤ 7 seats)", "Passenger car (8 or 9 seats)", "Goods vehicle / Motorhome", "Motorcycle", "Caravan / Trailer"],
+    vehicleClassDetails: [
+      { name: "Passenger car (≤ 7 seats)", description: "This category corresponds to toll class D1. It applies to passenger cars with up to 7 seats and a maximum permissible weight of up to 3.5 t. Most privately used cars fall within this Hungarian e-vignette category." },
+      { name: "Passenger car (8 or 9 seats)", description: "This category falls under toll class D2. It includes passenger cars with 8 or 9 seats and a maximum permissible weight of up to 3.5 t." },
+      { name: "Goods vehicle / Motorhome", description: "Goods vehicles and motorhomes with a maximum permissible weight of up to 3.5 t are classified under D2. This includes light commercial vehicles and camper vehicles within the 3.5 t limit." },
+      { name: "Motorcycle", description: "Motorcycles are classified under toll category D1M. This category applies exclusively to two-wheeled motor vehicles registered as motorcycles." },
+      { name: "Caravan / Trailer", description: "Trailers and caravans are classified under toll category U. A separate e-vignette is required when the trailer or caravan is attached to a D2 vehicle, such as a passenger car with 8 or 9 seats or a goods vehicle / motorhome with a maximum permissible weight of up to 3.5 t." },
+    ],
+    validityPeriodsIntro: "The Hungary e-vignette is available for several validity periods, allowing drivers to choose the option that best matches the length of their trip. Whether you are just passing through, taking a short holiday or using Hungarian motorways regularly, there is a vignette that fits your travel needs. All validity periods start from your selected date and the vignette is linked to your license plate electronically.",
     validityPeriods: [
-      { name: "1-day vignette", description: "Ideal for short transit." },
-      { name: "10-day vignette", description: "Perfect for holidays." },
+      { name: "1-day vignette", description: "Ideal for short transit or day trips." },
+      { name: "10-day vignette", description: "Perfect for holidays or short stays." },
       { name: "Monthly vignette", description: "Great for regular visitors." },
       { name: "Annual vignette", description: "Best value for frequent travellers." },
     ],
+    priceIntro: "When you buy your Hungary vignette online through Tollvignettes.eu, you pay according to the official Hungarian e-vignette prices set in HUF (Hungarian Forint) by the national toll authority. Tollvignettes.eu applies these official rates transparently, while allowing you to purchase your vignette in another preferred currency.",
+    exchangeRate: "Ft 100 = 0.4202 EUR",
+    exchangeDate: "Friday 20 February 2026",
     priceTables: [
-      {
-        category: "Passenger car (≤ 7 seats)",
-        rows: [
-          { period: "1 day", localPrice: "HUF 5,550", eurPrice: "€23.32" },
-          { period: "10 days", localPrice: "HUF 6,900", eurPrice: "€28.99" },
-          { period: "1 month", localPrice: "HUF 11,170", eurPrice: "€46.93" },
-          { period: "2026 annual", localPrice: "HUF 61,760", eurPrice: "€259.51" },
-        ],
-      },
       {
         category: "Motorcycle",
         rows: [
-          { period: "1 day", localPrice: "HUF 2,770", eurPrice: "€11.64" },
-          { period: "10 days", localPrice: "HUF 3,450", eurPrice: "€14.50" },
-          { period: "1 month", localPrice: "HUF 5,590", eurPrice: "€23.49" },
+          { period: "1 day", localPrice: "HUF 2,770.00", eurPrice: "€11.64" },
+          { period: "10 days", localPrice: "HUF 3,450.00", eurPrice: "€14.50" },
+          { period: "1 month", localPrice: "HUF 5,590.00", eurPrice: "€23.49" },
+        ],
+      },
+      {
+        category: "Passenger car (≤ 7 seats)",
+        rows: [
+          { period: "1 day", localPrice: "HUF 5,550.00", eurPrice: "€23.32" },
+          { period: "10 days", localPrice: "HUF 6,900.00", eurPrice: "€28.99" },
+          { period: "1 month", localPrice: "HUF 11,170.00", eurPrice: "€46.93" },
+          { period: "2026", localPrice: "HUF 61,760.00", eurPrice: "€259.51" },
+        ],
+      },
+      {
+        category: "Passenger car (8 or 9 seats)",
+        rows: [
+          { period: "1 day", localPrice: "HUF 7,890.00", eurPrice: "€33.15" },
+          { period: "10 days", localPrice: "HUF 10,040.00", eurPrice: "€42.19" },
+          { period: "1 month", localPrice: "HUF 15,820.00", eurPrice: "€66.47" },
+          { period: "2026", localPrice: "HUF 87,650.00", eurPrice: "€368.31" },
         ],
       },
       {
         category: "Caravan / Trailer",
         rows: [
-          { period: "1 day", localPrice: "HUF 5,550", eurPrice: "€23.32" },
-          { period: "10 days", localPrice: "HUF 6,900", eurPrice: "€28.99" },
-          { period: "1 month", localPrice: "HUF 11,170", eurPrice: "€46.93" },
-          { period: "2026 annual", localPrice: "HUF 61,760", eurPrice: "€259.51" },
+          { period: "1 day", localPrice: "HUF 5,550.00", eurPrice: "€23.32" },
+          { period: "10 days", localPrice: "HUF 6,900.00", eurPrice: "€28.99" },
+          { period: "1 month", localPrice: "HUF 11,170.00", eurPrice: "€46.93" },
+          { period: "2026", localPrice: "HUF 61,760.00", eurPrice: "€259.51" },
         ],
       },
     ],
     priceNote: "Prices based on official HUF rates. EUR conversions are approximate.",
+    lorrySection: {
+      title: "Toll regulations for lorries",
+      intro: "In Hungary, all vehicles over 3,500 kg are subject to a distance-based toll system called HU-GO. This system applies to lorries, buses, and heavy goods vehicles travelling on motorways, expressways and main roads. Unlike passenger cars, these vehicles do not use the e-vignette, but must register and pay tolls according to the distance travelled.",
+      factors: [
+        "Vehicle category (number of axles: J2, J3, J4, J5)",
+        "Road type (motorway, expressway, or main road)",
+        "Emission class (EURO rating)",
+        "Total distance travelled",
+      ],
+      details: "Toll payments are managed through the HU-GO electronic toll system, operated by the National Toll Payment Services Plc. Registered users can install an On-Board Unit (OBU) that automatically records their journeys and deducts tolls from a prepaid account. Occasional users can choose a route ticket, purchased before starting their trip, valid for a specific route and vehicle.\n\nFrom 1 February 2025, route tickets are valid for 120 minutes from the moment of purchase. Missing this window or driving without a valid HU-GO registration can result in heavy fines, often exceeding 280,000 HUF depending on the violation.\n\nEnforcement is fully automated through camera surveillance, mobile control units, and roadside checks. Each vehicle's license plate is cross-checked in real time to ensure compliance with the Hungarian toll regulations.",
+      link: { text: "More information", url: "https://toll-charge.hu/en/" },
+    },
     faqs: [
-      { question: "Do I need a vignette in Hungary?", answer: "Yes. All passenger cars, motorcycles and light vehicles up to 3,500 kg require a valid e-matrica for motorways." },
-      { question: "Which roads require a vignette?", answer: "All motorways and expressways marked with M (M1, M3, M5, M6, M7 etc.)." },
-      { question: "Is the vignette linked to the license plate?", answer: "Yes. It is fully electronic with no physical sticker." },
-      { question: "What are the fines?", answer: "Up to 60,000 HUF for passenger cars. A 60-minute grace period applies." },
-      { question: "Can I change or cancel my vignette?", answer: "Once activated, a Hungary vignette cannot be cancelled, changed or refunded." },
+      { question: "Do I need a vignette in Hungary?", answer: "Yes. All passenger cars, motorcycles and light vehicles up to 3,500 kg require a valid Hungary vignette (e-matrica) to use the country's motorways and expressways. Without one, your trip will be considered unauthorised road use, which can lead to fines. Vehicles above 3,500 kg use the HU-GO system instead." },
+      { question: "Which roads require a vignette in Hungary?", answer: "Vignettes are mandatory on all motorways and expressways marked with M, such as M1, M3, M5, M6 and M7. These connect Hungary with Austria, Slovakia, Romania, Croatia and Serbia. Enforcement is camera-based, so there are no toll booths." },
+      { question: "How can I buy the Hungary vignette online?", answer: "The fastest and safest way to buy your Hungary vignette online is through an official sales platform, like Tollvignettes.eu. Simply enter your license plate, choose the validity period, select your vehicle category, and pay securely by card or PayPal. Your Hungarian e-vignette is activated instantly and sent by email." },
+      { question: "Is the Hungarian vignette linked to the license plate?", answer: "Yes. The digital vignette is fully electronic and registered to your vehicle's license plate. There is no physical sticker. Cameras automatically verify license plates to ensure compliance across all toll roads in Hungary." },
+      { question: "Do I need a vignette for my trailer or caravan?", answer: "If you drive a D2 vehicle (minibus or large car) with a trailer up to 3,500 kg, you need an additional U-category vignette for the trailer. For D1 vehicles (cars up to 7 seats), the trailer is already included in the main vignette." },
+      { question: "What are the fines for driving without a valid Hungary vignette?", answer: "If you drive on a toll road in Hungary without a valid Hungary vignette, you risk a fine of up to 60,000 HUF for passenger cars and higher amounts for larger vehicles. However, if you purchase a valid vignette within 60 minutes after entering the motorway, the penalty is waived. This is known as the official grace period." },
+      { question: "Can I buy a Hungary vignette at the border or petrol stations?", answer: "Yes, you can pay the Hungarian digital toll at most petrol stations, border crossings and official sales outlets. However, petrol stations are often busy and time-consuming. Paying your toll online through an official sales platform (e.g. Tollvignettes.eu) is much faster, safer, and available 24/7." },
+      { question: "Can I change or cancel my Hungarian vignette?", answer: "Once activated, a Hungary vignette cannot be cancelled, changed or refunded. If you made a mistake (e.g. wrong plate or start date), contact the National Toll Payment Services Plc. immediately. They may correct errors before activation." },
+      { question: "Do lorries and heavy vehicles need a vignette?", answer: "No. Lorries and buses over 3,500 kg use the HU-GO electronic toll system, a distance-based charging method. The toll depends on distance, vehicle type, number of axles and emission class. These vehicles must register and pay via HU-GO.hu." },
     ],
-    neighbourIntro: "Several neighbouring countries also require a vignette or toll payment.",
+    neighbourIntro: "Several neighbouring countries of Hungary also require a vignette or toll payment for using their motorways and expressways. Each country has its own toll system to finance and maintain road infrastructure, so make sure you have the correct vignette or toll registration before crossing the border:",
   },
   "vignette-slovenia": {
     name: "Slovenia",
