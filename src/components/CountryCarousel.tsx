@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { ArrowRight, Grid2X2, X } from "lucide-react";
+import { ArrowRight, Grid2X2, X, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
@@ -22,7 +22,7 @@ const countries = [
   { name: "Moldova", slug: "vignette-moldova", image: moldova, flag: "/flags/moldova.svg" },
 ];
 
-const CountryCard = ({ country, preventClick }: { country: typeof countries[0]; preventClick?: boolean }) => (
+const CountryCard = ({ country, preventClick, compact }: { country: typeof countries[0]; preventClick?: boolean; compact?: boolean }) => (
   <div className="relative w-full h-full rounded-2xl overflow-hidden group">
     <img
       src={country.image}
@@ -31,17 +31,17 @@ const CountryCard = ({ country, preventClick }: { country: typeof countries[0]; 
       draggable={false}
     />
     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
-    <div className="absolute top-5 left-5">
+    <div className="absolute top-4 left-4 md:top-5 md:left-5">
       <p className="text-xs font-medium text-primary-foreground/80">E-vignettes</p>
       <div className="flex items-center gap-2 mt-1">
         <img src={country.flag} alt={`${country.name} flag`} className="w-5 h-4 rounded-sm object-cover" draggable={false} />
-        <h3 className="text-xl font-bold text-primary-foreground">{country.name}</h3>
+        <h3 className={`font-bold text-primary-foreground ${compact ? "text-lg" : "text-xl"}`}>{country.name}</h3>
       </div>
     </div>
-    <div className="absolute bottom-5 left-5 right-5">
+    <div className="absolute bottom-4 right-4 md:bottom-5 md:left-5 md:right-5">
       <Link
         to={`/${country.slug}`}
-        className="flex items-center justify-between w-full bg-primary-foreground rounded-full pl-6 pr-2 py-2 hover:shadow-lg transition-shadow"
+        className="md:flex items-center justify-between w-full bg-primary-foreground rounded-full md:pl-6 md:pr-2 md:py-2 hover:shadow-lg transition-shadow hidden"
         onClick={(e) => { if (preventClick) e.preventDefault(); }}
         draggable={false}
       >
@@ -49,6 +49,15 @@ const CountryCard = ({ country, preventClick }: { country: typeof countries[0]; 
         <span className="bg-accent rounded-full p-2">
           <ArrowRight className="w-4 h-4 text-accent-foreground" />
         </span>
+      </Link>
+      {/* Mobile: yellow circle + button */}
+      <Link
+        to={`/${country.slug}`}
+        className="md:hidden bg-accent rounded-full p-3 inline-flex hover:shadow-lg transition-shadow"
+        onClick={(e) => { if (preventClick) e.preventDefault(); }}
+        draggable={false}
+      >
+        <Plus className="w-5 h-5 text-accent-foreground" />
       </Link>
     </div>
   </div>
@@ -119,8 +128,8 @@ const CountryCarousel = () => {
           <div className="w-full max-w-7xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {countries.map((country) => (
-                <div key={country.slug} className="h-[250px] md:h-[380px]">
-                  <CountryCard country={country} />
+                <div key={country.slug} className="h-[280px] md:h-[380px]">
+                  <CountryCard country={country} compact />
                 </div>
               ))}
             </div>
@@ -130,13 +139,13 @@ const CountryCarousel = () => {
 
       <div className="flex items-start gap-4">
         {/* Left sidebar – single grid icon */}
-        <div className="hidden md:flex flex-col items-center pl-6 md:pl-12 pt-2">
+        <div className="flex flex-col items-center pl-4 md:pl-12 pt-2">
           <button
             onClick={() => setShowGrid(true)}
-            className="border border-border rounded-full p-4 hover:bg-muted transition-colors"
+            className="border border-border rounded-full p-3 md:p-4 hover:bg-muted transition-colors"
             title="Show all countries"
           >
-            <Grid2X2 className="w-5 h-5 text-foreground" />
+            <Grid2X2 className="w-4 h-4 md:w-5 md:h-5 text-foreground" />
           </button>
         </div>
 
@@ -155,7 +164,7 @@ const CountryCarousel = () => {
           {countries.map((country) => (
             <div
               key={country.slug}
-              className="relative flex-shrink-0 w-[260px] md:w-[300px] h-[380px] md:h-[420px]"
+              className="relative flex-shrink-0 w-[280px] md:w-[300px] h-[400px] md:h-[420px]"
             >
               <CountryCard country={country} preventClick={hasDragged} />
             </div>
