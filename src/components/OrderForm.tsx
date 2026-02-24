@@ -1,13 +1,58 @@
 import { useMemo, useState } from "react";
-import { ArrowRight, ChevronDown, Star, Mail, Car, Calendar, Clock } from "lucide-react";
+import { ArrowRight, ChevronDown, Star, Mail, Car, Calendar, Clock, Globe } from "lucide-react";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
+import { format, addDays, addMonths, addYears } from "date-fns";
 import { cn } from "@/lib/utils";
 import type { CountryData } from "@/data/countries";
 
 interface OrderFormProps {
   data: CountryData;
+}
+
+const REGISTRATION_COUNTRIES = [
+  { name: "Austria", code: "A" },
+  { name: "Belgium", code: "B" },
+  { name: "Bulgaria", code: "BG" },
+  { name: "Croatia", code: "HR" },
+  { name: "Czech Republic", code: "CZ" },
+  { name: "Denmark", code: "DK" },
+  { name: "Estonia", code: "EST" },
+  { name: "Finland", code: "FIN" },
+  { name: "France", code: "F" },
+  { name: "Germany", code: "D" },
+  { name: "Greece", code: "GR" },
+  { name: "Hungary", code: "H" },
+  { name: "Ireland", code: "IRL" },
+  { name: "Italy", code: "I" },
+  { name: "Latvia", code: "LV" },
+  { name: "Lithuania", code: "LT" },
+  { name: "Luxembourg", code: "L" },
+  { name: "Moldova", code: "MD" },
+  { name: "Netherlands", code: "NL" },
+  { name: "Norway", code: "N" },
+  { name: "Poland", code: "PL" },
+  { name: "Portugal", code: "P" },
+  { name: "Romania", code: "RO" },
+  { name: "Slovakia", code: "SK" },
+  { name: "Slovenia", code: "SLO" },
+  { name: "Spain", code: "E" },
+  { name: "Sweden", code: "S" },
+  { name: "Switzerland", code: "CH" },
+  { name: "Turkey", code: "TR" },
+  { name: "United Kingdom", code: "GB" },
+];
+
+function computeEndDate(startDate: Date, period: string): Date {
+  const p = period.toLowerCase();
+  if (p.includes("1 day")) return addDays(startDate, 1);
+  if (p.includes("10 day")) return addDays(startDate, 10);
+  if (p.includes("30 day")) return addDays(startDate, 30);
+  if (p.includes("1 year") || p.includes("annual")) return addYears(startDate, 1);
+  if (p.includes("1 month")) return addMonths(startDate, 1);
+  if (p.includes("7 day")) return addDays(startDate, 7);
+  if (p.includes("90 day")) return addDays(startDate, 90);
+  return addDays(startDate, 30);
 }
 
 const OrderForm = ({ data }: OrderFormProps) => {
@@ -16,6 +61,9 @@ const OrderForm = ({ data }: OrderFormProps) => {
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
   const [vehicleOpen, setVehicleOpen] = useState(false);
   const [validityOpen, setValidityOpen] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState<typeof REGISTRATION_COUNTRIES[0] | null>(null);
+  const [licensePlate, setLicensePlate] = useState("");
 
   const activeVehicleIndex = selectedVehicleIndex ?? 0;
 
@@ -39,6 +87,18 @@ const OrderForm = ({ data }: OrderFormProps) => {
       : null;
 
   const showStartDate = Boolean(selectedVehicleLabel && validityPeriod);
+  const showExtras = Boolean(startDate && validityPeriod && selectedVehicleLabel);
+
+  const endDate = useMemo(() => {
+    if (!startDate || !validityPeriod) return null;
+    return computeEndDate(startDate, validityPeriod);
+  }, [startDate, validityPeriod]);
+
+  const closeAllDropdowns = () => {
+    setVehicleOpen(false);
+    setValidityOpen(false);
+    setCountryOpen(false);
+  };
 
   return (
     <div className="bg-card rounded-2xl shadow-xl p-6 md:p-8 relative z-40">
@@ -52,11 +112,12 @@ const OrderForm = ({ data }: OrderFormProps) => {
       </div>
 
       <div className="space-y-3">
+        {/* Vehicle category */}
         <div className="relative z-30">
           <button
             onClick={() => {
+              closeAllDropdowns();
               setVehicleOpen((prev) => !prev);
-              setValidityOpen(false);
             }}
             className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors"
           >
@@ -97,11 +158,12 @@ const OrderForm = ({ data }: OrderFormProps) => {
           )}
         </div>
 
+        {/* Validity period */}
         <div className="relative z-20">
           <button
             onClick={() => {
+              closeAllDropdowns();
               setValidityOpen((prev) => !prev);
-              setVehicleOpen(false);
             }}
             className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors"
           >
@@ -139,6 +201,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
           )}
         </div>
 
+        {/* Start date */}
         {showStartDate && (
           <Popover>
             <PopoverTrigger asChild>
@@ -171,6 +234,82 @@ const OrderForm = ({ data }: OrderFormProps) => {
             </PopoverContent>
           </Popover>
         )}
+
+        {/* Validity period display (after date selected) */}
+        {showExtras && startDate && endDate && (
+          <div className="border border-border rounded-xl px-4 py-3 bg-muted/30">
+            <span className="text-xs text-muted-foreground block leading-none mb-1">Validity period</span>
+            <span className="text-sm text-foreground">
+              From <strong>{format(startDate, "dd/MM/yyyy")}, 00:00</strong> up to and including <strong>{format(endDate, "dd/MM/yyyy")}, 23:59</strong>
+            </span>
+          </div>
+        )}
+
+        {/* Country of vehicle registration */}
+        {showExtras && (
+          <div className="relative z-10">
+            <button
+              onClick={() => {
+                closeAllDropdowns();
+                setCountryOpen((prev) => !prev);
+              }}
+              className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Globe className="w-5 h-5 text-muted-foreground" />
+                <div>
+                  {selectedCountry ? (
+                    <>
+                      <span className="text-xs text-muted-foreground block leading-none mb-0.5">Country of vehicle registration</span>
+                      <span className="text-sm text-foreground">{selectedCountry.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">Country of vehicle registration</span>
+                  )}
+                </div>
+              </div>
+              <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${countryOpen ? "rotate-180" : ""}`} />
+            </button>
+
+            {countryOpen && (
+              <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-xl z-50 overflow-hidden shadow-lg max-h-60 overflow-y-auto">
+                {REGISTRATION_COUNTRIES.map((country) => (
+                  <button
+                    key={country.code}
+                    onClick={() => {
+                      setSelectedCountry(country);
+                      setCountryOpen(false);
+                    }}
+                    className={`flex items-center gap-3 w-full text-left px-4 py-3 text-sm hover:bg-muted/50 transition-colors ${selectedCountry?.code === country.code ? "bg-muted" : ""}`}
+                  >
+                    <Globe className="w-4 h-4 text-muted-foreground" />
+                    <span>{country.name}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* License plate input */}
+        {showExtras && selectedCountry && (
+          <div>
+            <p className="text-sm font-medium text-foreground mb-2">Enter your license plate</p>
+            <div className="flex items-stretch border-2 border-primary rounded-xl overflow-hidden">
+              <div className="flex items-center justify-center bg-primary text-primary-foreground px-3 text-sm font-bold min-w-[48px]">
+                {selectedCountry.code}
+              </div>
+              <input
+                type="text"
+                value={licensePlate}
+                onChange={(e) => setLicensePlate(e.target.value.toUpperCase())}
+                placeholder="Enter plate number"
+                className="flex-1 px-4 py-3 text-sm bg-card text-foreground outline-none placeholder:text-muted-foreground"
+                maxLength={15}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="flex items-end justify-end mt-6 gap-4">
@@ -196,4 +335,3 @@ const OrderForm = ({ data }: OrderFormProps) => {
 };
 
 export default OrderForm;
-
