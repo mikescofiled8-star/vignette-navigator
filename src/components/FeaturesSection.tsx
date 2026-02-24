@@ -33,8 +33,8 @@ const FeaturesSection = () => {
       <div className="grid md:grid-cols-3 gap-8">
         {features.map((f) => (
           <div key={f.num} className="flex flex-col">
-            <div className="bg-secondary rounded-2xl p-6 mb-6 flex items-center justify-center h-48">
-              <img src={f.image} alt={f.title} className="h-32 object-contain" />
+            <div className="bg-secondary rounded-2xl overflow-hidden mb-6">
+              <img src={f.image} alt={f.title} className="w-full h-[300px] md:h-48 object-cover" />
             </div>
             <span className="text-sm text-muted-foreground font-medium">{f.num}</span>
             <h3 className="text-xl font-bold text-foreground mt-1 mb-3">{f.title}</h3>
