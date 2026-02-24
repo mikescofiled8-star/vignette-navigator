@@ -55,7 +55,7 @@ const VignettePage = () => {
       <Header />
       <main>
         {/* Hero Section */}
-        <section className="relative h-[500px] md:h-[600px] overflow-hidden">
+        <section className="relative h-[500px] md:h-[600px] overflow-visible">
           <img src={heroImage} alt={data.name} className="absolute inset-0 w-full h-full object-cover" />
           <div className="absolute inset-0 bg-black/30" />
           <div className="relative z-10 h-full flex flex-col items-center justify-center px-6">
@@ -67,7 +67,7 @@ const VignettePage = () => {
           </div>
 
           {/* Order form card */}
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-2xl mx-auto px-4">
+          <div className="absolute z-30 bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-2xl mx-auto px-4">
             <OrderForm data={data} />
           </div>
         </section>
