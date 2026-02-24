@@ -66,6 +66,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
   const [vehicleOpen, setVehicleOpen] = useState(false);
   const [validityOpen, setValidityOpen] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<typeof REGISTRATION_COUNTRIES[0] | null>(null);
   const [licensePlate, setLicensePlate] = useState("");
 
@@ -195,7 +196,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
 
         {/* Start date */}
         {showStartDate && (
-          <Popover>
+          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
             <PopoverTrigger asChild>
               <button className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors">
                 <div className="flex items-center gap-3">
@@ -218,8 +219,11 @@ const OrderForm = ({ data }: OrderFormProps) => {
               <CalendarWidget
                 mode="single"
                 selected={startDate}
-                onSelect={setStartDate}
-                disabled={(date) => date < new Date()}
+                onSelect={(date) => {
+                  setStartDate(date);
+                  if (date) setCalendarOpen(false);
+                }}
+                disabled={(d) => d < new Date()}
                 initialFocus
                 className={cn("p-3 pointer-events-auto")}
               />
