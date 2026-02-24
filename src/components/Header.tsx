@@ -1,21 +1,36 @@
 import { ChevronDown, ShoppingBag } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const languages = ["English", "Deutsch", "Français", "Română", "Česky", "Magyar", "Slovensky", "Slovenščina", "Български"];
 const currencies = ["EUR", "USD", "GBP", "CHF", "CZK", "HUF", "RON", "BGN"];
 
+const countryLinks = [
+  { name: "Czech Republic", slug: "vignette-czechia", flag: "/flags/czech-republic.svg" },
+  { name: "Slovakia", slug: "vignette-slovakia", flag: "/flags/slovakia.svg" },
+  { name: "Romania", slug: "vignette-romania", flag: "/flags/romania.svg" },
+  { name: "Bulgaria", slug: "vignette-bulgaria", flag: "/flags/bulgaria.svg" },
+  { name: "Hungary", slug: "vignette-hungary", flag: "/flags/hungary.svg" },
+  { name: "Slovenia", slug: "vignette-slovenia", flag: "/flags/slovenia.svg" },
+  { name: "Switzerland", slug: "vignette-switzerland", flag: "/flags/switzerland.svg" },
+  { name: "Moldova", slug: "vignette-moldova", flag: "/flags/moldova.svg" },
+];
+
 const Header = () => {
   const [langOpen, setLangOpen] = useState(false);
   const [currOpen, setCurrOpen] = useState(false);
+  const [vignetteOpen, setVignetteOpen] = useState(false);
   const [selectedLang, setSelectedLang] = useState("English");
   const [selectedCurr, setSelectedCurr] = useState("EUR");
   const langRef = useRef<HTMLDivElement>(null);
   const currRef = useRef<HTMLDivElement>(null);
+  const vignetteRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       if (langRef.current && !langRef.current.contains(e.target as Node)) setLangOpen(false);
       if (currRef.current && !currRef.current.contains(e.target as Node)) setCurrOpen(false);
+      if (vignetteRef.current && !vignetteRef.current.contains(e.target as Node)) setVignetteOpen(false);
     };
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -52,17 +67,39 @@ const Header = () => {
       </div>
 
       {/* Main nav */}
-      <header className="flex items-center justify-between px-6 md:px-12 py-4">
-        <div className="flex items-center gap-2">
+      <header className="flex items-center justify-between px-6 md:px-12 py-4 bg-background">
+        <Link to="/" className="flex items-center gap-2">
           <span className="text-2xl font-bold tracking-tight text-foreground">
             <span className="text-primary">toll</span>vignettes.
           </span>
-        </div>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-foreground">
-          <button className="flex items-center gap-1 hover:text-primary transition-colors">
-            E-vignettes <ChevronDown className="w-3 h-3" />
-          </button>
+          <div ref={vignetteRef} className="relative">
+            <button
+              onClick={() => setVignetteOpen(!vignetteOpen)}
+              className="flex items-center gap-1 hover:text-primary transition-colors"
+            >
+              E-vignettes <ChevronDown className={`w-3 h-3 transition-transform ${vignetteOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {vignetteOpen && (
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 bg-background border border-border rounded-lg shadow-lg py-2 z-50 min-w-[600px]">
+                <div className="grid grid-cols-3 gap-x-8 gap-y-1 px-6 py-3">
+                  {countryLinks.map(c => (
+                    <Link
+                      key={c.slug}
+                      to={`/${c.slug}`}
+                      onClick={() => setVignetteOpen(false)}
+                      className="flex items-center gap-2.5 py-2 hover:text-primary transition-colors text-sm"
+                    >
+                      <img src={c.flag} alt={c.name} className="w-5 h-3.5 rounded-sm object-cover" />
+                      <span>{c.name}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
           <a href="#contact" className="hover:text-primary transition-colors">Contact</a>
         </nav>
 
