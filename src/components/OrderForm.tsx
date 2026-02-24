@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ArrowRight, ChevronDown, Star, Mail, Car, Calendar, Clock, Globe } from "lucide-react";
 import { Calendar as CalendarWidget } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -56,6 +57,7 @@ function computeEndDate(startDate: Date, period: string): Date {
 }
 
 const OrderForm = ({ data }: OrderFormProps) => {
+  const navigate = useNavigate();
   const [selectedVehicleIndex, setSelectedVehicleIndex] = useState<number | null>(null);
   const [validityPeriod, setValidityPeriod] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | undefined>(undefined);
@@ -319,7 +321,25 @@ const OrderForm = ({ data }: OrderFormProps) => {
             <p className="text-2xl font-semibold text-foreground">{price}</p>
           </div>
         )}
-        <button className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
+        <button
+          onClick={() => {
+            if (!price || !selectedVehicleLabel || !validityPeriod || !startDate || !endDate || !selectedCountry || !licensePlate) return;
+            navigate("/checkout", {
+              state: {
+                country: data.name,
+                vehicleCategory: selectedVehicleLabel,
+                validityPeriod,
+                startDate: format(startDate, "dd/MM/yyyy"),
+                endDate: format(endDate, "dd/MM/yyyy"),
+                price,
+                registrationCountry: selectedCountry.name,
+                registrationCode: selectedCountry.code,
+                licensePlate,
+              },
+            });
+          }}
+          className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity"
+        >
           <span className="text-sm font-semibold">Add to cart</span>
           <span className="bg-accent rounded-full p-2">
             <ArrowRight className="w-4 h-4 text-accent-foreground" />
