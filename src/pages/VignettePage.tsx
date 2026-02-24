@@ -1,7 +1,8 @@
 import { useParams, Link } from "react-router-dom";
-import { ArrowRight, ChevronDown, Star, Mail, Car, Calendar, Clock } from "lucide-react";
+import { ArrowRight, ChevronDown } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import OrderForm from "@/components/OrderForm";
 import { countryDataMap } from "@/data/countries";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
@@ -67,53 +68,7 @@ const VignettePage = () => {
 
           {/* Order form card */}
           <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-2xl mx-auto px-4">
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-              <div className="flex items-center justify-between mb-6">
-                <p className="text-muted-foreground text-sm">Enter details</p>
-                <div className="flex items-center gap-1 text-sm">
-                  <Star className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  <span className="font-medium">4.6</span>
-                  <span className="text-muted-foreground">Trustpilot</span>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <button className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Car className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Vehicle category</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Calendar className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Validity period</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                </button>
-                <button className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Clock className="w-5 h-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Start date</span>
-                  </div>
-                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
-                </button>
-              </div>
-
-              <div className="flex items-center justify-end mt-6 gap-4">
-                <button className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
-                  <span className="text-sm font-semibold">Add to cart</span>
-                  <span className="bg-accent rounded-full p-2">
-                    <ArrowRight className="w-4 h-4 text-accent-foreground" />
-                  </span>
-                </button>
-              </div>
-              <div className="flex items-center justify-end mt-3 gap-2 text-muted-foreground text-xs">
-                <Mail className="w-3 h-3" />
-                <span>Immediate delivery</span>
-              </div>
-            </div>
+            <OrderForm data={data} />
           </div>
         </section>
 
