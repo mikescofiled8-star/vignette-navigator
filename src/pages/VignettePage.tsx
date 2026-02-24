@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import OrderForm from "@/components/OrderForm";
 import { countryDataMap } from "@/data/countries";
+import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
 import slovakia from "@/assets/countries/slovakia.webp";
@@ -39,11 +40,12 @@ const allCountries = [
 const VignettePage = () => {
   const { slug } = useParams<{ slug: string }>();
   const data = slug ? countryDataMap[slug] : null;
+  const { t, formatPrice } = useLanguageCurrency();
 
   if (!data) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="text-xl text-muted-foreground">Country not found</p>
+        <p className="text-xl text-muted-foreground">{t("vignette.countryNotFound")}</p>
       </div>
     );
   }
@@ -62,25 +64,20 @@ const VignettePage = () => {
             <h1 className="text-5xl md:text-7xl font-serif text-white font-light">{data.name}</h1>
             <div className="absolute top-8 right-8 flex items-center gap-2 text-white">
               <img src={data.flag} alt={`${data.name} flag`} className="w-6 h-5 rounded-sm" />
-              <span className="text-sm font-medium">E-vignette</span>
+              <span className="text-sm font-medium">{t("vignette.evignette")}</span>
             </div>
           </div>
-
-          {/* Order form card */}
           <div className="absolute z-30 bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-full max-w-2xl mx-auto px-4">
             <OrderForm data={data} />
           </div>
         </section>
 
-        {/* Content sections */}
         <div className="max-w-4xl mx-auto px-6 pt-48 md:pt-40 pb-16">
-          {/* Hero description & title */}
           <div className="mb-12">
             <p className="text-lg font-semibold leading-relaxed mb-4">{data.heroDescription}</p>
             <h2 className="text-3xl md:text-4xl font-serif">{data.heroTitle}</h2>
           </div>
 
-          {/* Numbered Sections */}
           {data.numberedSections && data.numberedSections.length > 0 && (
             <div className="space-y-10 mb-16">
               {data.numberedSections.map((section, i) => (
@@ -95,17 +92,16 @@ const VignettePage = () => {
 
           {/* Toll Roads */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-4">Toll roads in {data.name}</h2>
+            <h2 className="text-3xl font-serif mb-4">{t("vignette.tollRoads")} {data.name}</h2>
             <p className="text-muted-foreground mb-4">{data.tollRoadsIntro}</p>
             {data.tollRoadsDetailedIntro && (
               <p className="text-muted-foreground mb-6">{data.tollRoadsDetailedIntro}</p>
             )}
 
-            {/* Regional toll roads */}
             {data.tollRoadsRegional && data.tollRoadsRegional.length > 0 ? (
               <div className="space-y-6">
-                <h3 className="text-2xl font-serif mt-8 mb-4">Hungarian motorways and expressways requiring a vignette</h3>
-                <p className="text-muted-foreground mb-6">The following road sections are subject to toll and require a valid Hungary vignette (e-matrica):</p>
+                <h3 className="text-2xl font-serif mt-8 mb-4">{t("vignette.hungarianMotorways")}</h3>
+                <p className="text-muted-foreground mb-6">{t("vignette.hungarianMotorwaysDesc")}</p>
                 {data.tollRoadsRegional.map((region, i) => (
                   <div key={i}>
                     <h4 className="text-lg font-bold mb-2">{region.region}</h4>
@@ -134,22 +130,20 @@ const VignettePage = () => {
 
                 {data.tollRoadsLegalNote && (
                   <div className="mt-8">
-                    <h3 className="text-xl font-semibold mb-3">Using toll roads legally in {data.name}</h3>
+                    <h3 className="text-xl font-semibold mb-3">{t("vignette.usingTollRoads")} {data.name}</h3>
                     <p className="text-muted-foreground">{data.tollRoadsLegalNote}</p>
                   </div>
                 )}
               </div>
             ) : (
-              <>
-                <ul className="space-y-2">
-                  {data.tollRoadsList.map((road, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="text-muted-foreground mt-1">•</span>
-                      <span>{road}</span>
-                    </li>
-                  ))}
-                </ul>
-              </>
+              <ul className="space-y-2">
+                {data.tollRoadsList.map((road, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm">
+                    <span className="text-muted-foreground mt-1">•</span>
+                    <span>{road}</span>
+                  </li>
+                ))}
+              </ul>
             )}
 
             {data.tollFreeIntro && (
@@ -171,11 +165,11 @@ const VignettePage = () => {
           <section className="mb-16">
             <div className="bg-foreground rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <p className="text-background/70 text-xs">E-vignette</p>
+                <p className="text-background/70 text-xs">{t("vignette.evignette")}</p>
                 <p className="text-background text-xl font-bold">{data.name}</p>
               </div>
               <button className="flex items-center gap-3 bg-background text-foreground rounded-full pl-6 pr-2 py-2">
-                <span className="text-sm font-semibold">Buy now</span>
+                <span className="text-sm font-semibold">{t("vignette.buyNow")}</span>
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
                 </span>
@@ -185,7 +179,7 @@ const VignettePage = () => {
 
           {/* Vehicle Classes */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-4">Vehicle classes for {data.name} vignettes</h2>
+            <h2 className="text-3xl font-serif mb-4">{t("vignette.vehicleClasses")} {data.name} {t("vignette.vignettes")}</h2>
             <p className="text-muted-foreground mb-6">{data.vehicleClassesIntro}</p>
             <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
               {data.vehicleClasses.map((vc, i) => (
@@ -208,7 +202,7 @@ const VignettePage = () => {
 
           {/* Validity Periods */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-4">Validity periods</h2>
+            <h2 className="text-3xl font-serif mb-4">{t("vignette.validityPeriods")}</h2>
             {data.validityPeriodsIntro && (
               <p className="text-muted-foreground mb-6">{data.validityPeriodsIntro}</p>
             )}
@@ -224,7 +218,7 @@ const VignettePage = () => {
 
           {/* Price Tables */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-4">{data.name} vignette prices 2026</h2>
+            <h2 className="text-3xl font-serif mb-4">{data.name} {t("vignette.prices2026")}</h2>
             {data.priceIntro && (
               <p className="text-muted-foreground mb-6">{data.priceIntro}</p>
             )}
@@ -232,7 +226,7 @@ const VignettePage = () => {
               <div className="bg-muted rounded-xl p-4 mb-6 flex items-center justify-between">
                 <span className="text-sm font-semibold">{data.exchangeRate}</span>
                 {data.exchangeDate && (
-                  <span className="text-xs text-muted-foreground">Last update: {data.exchangeDate}</span>
+                  <span className="text-xs text-muted-foreground">{t("vignette.lastUpdate")}: {data.exchangeDate}</span>
                 )}
               </div>
             )}
@@ -244,9 +238,9 @@ const VignettePage = () => {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-muted">
-                          <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">Validity period</th>
+                          <th className="text-left text-xs font-medium text-muted-foreground px-4 py-3">{t("vignette.validityPeriodCol")}</th>
                           {table.rows[0]?.localPrice && (
-                            <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">Local</th>
+                            <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">{t("vignette.local")}</th>
                           )}
                           <th className="text-right text-xs font-medium text-muted-foreground px-4 py-3">EUR</th>
                         </tr>
@@ -258,7 +252,7 @@ const VignettePage = () => {
                             {row.localPrice && (
                               <td className="px-4 py-3 text-sm text-right text-muted-foreground">{row.localPrice}</td>
                             )}
-                            <td className="px-4 py-3 text-sm text-right font-semibold">{row.eurPrice}</td>
+                            <td className="px-4 py-3 text-sm text-right font-semibold">{formatPrice(row.eurPrice)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -274,11 +268,11 @@ const VignettePage = () => {
           <section className="mb-16">
             <div className="bg-foreground rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <p className="text-background/70 text-xs">E-vignette</p>
+                <p className="text-background/70 text-xs">{t("vignette.evignette")}</p>
                 <p className="text-background text-xl font-bold">{data.name}</p>
               </div>
               <button className="flex items-center gap-3 bg-background text-foreground rounded-full pl-6 pr-2 py-2">
-                <span className="text-sm font-semibold">Buy now</span>
+                <span className="text-sm font-semibold">{t("vignette.buyNow")}</span>
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
                 </span>
@@ -293,7 +287,7 @@ const VignettePage = () => {
               <p className="text-muted-foreground mb-4">{data.lorrySection.intro}</p>
               {data.lorrySection.factors && data.lorrySection.factors.length > 0 && (
                 <>
-                  <p className="text-sm font-medium mb-2">The toll is calculated based on:</p>
+                  <p className="text-sm font-medium mb-2">{t("vignette.tollCalculated")}</p>
                   <ul className="space-y-2 mb-6">
                     {data.lorrySection.factors.map((factor, i) => (
                       <li key={i} className="flex items-start gap-2 text-sm">
@@ -315,7 +309,7 @@ const VignettePage = () => {
             </section>
           )}
 
-          {/* Bridge Section (Romania) */}
+          {/* Bridge Section */}
           {data.bridgeSection && (
             <section className="mb-16">
               <h2 className="text-3xl font-serif mb-4">{data.bridgeSection.title}</h2>
@@ -338,7 +332,7 @@ const VignettePage = () => {
 
           {/* FAQ */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-6">Frequently asked questions</h2>
+            <h2 className="text-3xl font-serif mb-6">{t("vignette.faq")}</h2>
             <div className="space-y-4">
               {data.faqs.map((faq, i) => (
                 <details key={i} className="group border border-border rounded-xl overflow-hidden">
@@ -358,11 +352,11 @@ const VignettePage = () => {
           <section className="mb-16">
             <div className="bg-foreground rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-4">
               <div>
-                <p className="text-background/70 text-xs">E-vignette</p>
+                <p className="text-background/70 text-xs">{t("vignette.evignette")}</p>
                 <p className="text-background text-xl font-bold">{data.name}</p>
               </div>
               <button className="flex items-center gap-3 bg-background text-foreground rounded-full pl-6 pr-2 py-2">
-                <span className="text-sm font-semibold">Buy now</span>
+                <span className="text-sm font-semibold">{t("vignette.buyNow")}</span>
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
                 </span>
@@ -372,7 +366,7 @@ const VignettePage = () => {
 
           {/* Neighbouring countries */}
           <section className="mb-16">
-            <h2 className="text-3xl font-serif mb-4">Vignettes in neighbouring countries</h2>
+            <h2 className="text-3xl font-serif mb-4">{t("vignette.neighbours")}</h2>
             <p className="text-muted-foreground mb-6">{data.neighbourIntro}</p>
             <div className="flex flex-wrap gap-3">
               {allCountries.map((c) => (

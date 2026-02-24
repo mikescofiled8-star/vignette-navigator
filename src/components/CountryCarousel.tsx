@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
 import { ArrowRight, Grid2X2, X, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
 
 import czechRepublic from "@/assets/countries/czech-republic.webp";
 import slovakia from "@/assets/countries/slovakia.webp";
@@ -22,7 +23,7 @@ const countries = [
   { name: "Moldova", slug: "vignette-moldova", image: moldova, flag: "/flags/moldova.svg" },
 ];
 
-const CountryCard = ({ country, preventClick, compact }: { country: typeof countries[0]; preventClick?: boolean; compact?: boolean }) => (
+const CountryCard = ({ country, preventClick, compact, t }: { country: typeof countries[0]; preventClick?: boolean; compact?: boolean; t: (key: string) => string }) => (
   <div className="relative w-full h-full rounded-2xl overflow-hidden group">
     <img
       src={country.image}
@@ -32,7 +33,7 @@ const CountryCard = ({ country, preventClick, compact }: { country: typeof count
     />
     <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/20" />
     <div className="absolute top-4 left-4 md:top-5 md:left-5">
-      <p className="text-xs font-medium text-primary-foreground/80">E-vignettes</p>
+      <p className="text-xs font-medium text-primary-foreground/80">{t("carousel.evignettes")}</p>
       <div className="flex items-center gap-2 mt-1">
         <img src={country.flag} alt={`${country.name} flag`} className="w-5 h-4 rounded-sm object-cover" draggable={false} />
         <h3 className={`font-bold text-primary-foreground ${compact ? "text-lg" : "text-xl"}`}>{country.name}</h3>
@@ -45,12 +46,11 @@ const CountryCard = ({ country, preventClick, compact }: { country: typeof count
         onClick={(e) => { if (preventClick) e.preventDefault(); }}
         draggable={false}
       >
-        <span className="text-sm font-semibold text-foreground">Buy now</span>
+        <span className="text-sm font-semibold text-foreground">{t("carousel.buyNow")}</span>
         <span className="bg-accent rounded-full p-2">
           <ArrowRight className="w-4 h-4 text-accent-foreground" />
         </span>
       </Link>
-      {/* Mobile: yellow circle + button */}
       <Link
         to={`/${country.slug}`}
         className="md:hidden bg-accent rounded-full p-3 inline-flex hover:shadow-lg transition-shadow"
@@ -64,6 +64,7 @@ const CountryCard = ({ country, preventClick, compact }: { country: typeof count
 );
 
 const CountryCarousel = () => {
+  const { t } = useLanguageCurrency();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [showGrid, setShowGrid] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
@@ -129,7 +130,7 @@ const CountryCarousel = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
               {countries.map((country) => (
                 <div key={country.slug} className="h-[280px] md:h-[380px]">
-                  <CountryCard country={country} compact />
+                  <CountryCard country={country} compact t={t} />
                 </div>
               ))}
             </div>
@@ -166,7 +167,7 @@ const CountryCarousel = () => {
               key={country.slug}
               className="relative flex-shrink-0 w-[280px] md:w-[300px] h-[400px] md:h-[420px]"
             >
-              <CountryCard country={country} preventClick={hasDragged} />
+              <CountryCard country={country} preventClick={hasDragged} t={t} />
             </div>
           ))}
         </div>
