@@ -1,4 +1,4 @@
-import paySafelyImg from "@/assets/pay-safely.jpg";
+import highwayImg from "@/assets/highway-vignette.png";
 import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
 
 const PaySafelySection = () => {
@@ -7,8 +7,8 @@ const PaySafelySection = () => {
     <section className="px-6 md:px-12 py-16">
       <div className="relative rounded-3xl overflow-hidden h-[400px] md:h-[500px]">
         <img
-          src={paySafelyImg}
-          alt="Pay safely online"
+          src={highwayImg}
+          alt="European highway e-vignette"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-transparent" />
