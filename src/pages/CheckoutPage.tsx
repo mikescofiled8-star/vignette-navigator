@@ -4,6 +4,7 @@ import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard,
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
+import { CardBrandLogos } from "@/components/CardBrandIcons";
 
 interface OrderData {
   country: string;
@@ -260,11 +261,7 @@ const CheckoutPage = () => {
                 <CreditCard className="w-5 h-5 text-muted-foreground shrink-0" />
                 <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
               </div>
-              <div className="flex items-center gap-2 mt-2 px-1">
-                <span className="text-xs font-bold text-[hsl(var(--accent))]">VISA</span>
-                <span className="text-xs font-bold text-destructive">MC</span>
-                <span className="text-xs font-bold text-primary">AMEX</span>
-              </div>
+              <CardBrandLogos />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
