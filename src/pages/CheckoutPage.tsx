@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard, Calendar, Lock, ShieldCheck } from "lucide-react";
+import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard, Calendar, Lock, ShieldCheck, RefreshCw, Bell } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
@@ -435,6 +435,11 @@ const CheckoutPage = () => {
               </p>
             </div>
 
+            <div className="flex items-center gap-2 bg-accent/10 border border-accent/20 rounded-xl px-4 py-3">
+              <Bell className="w-5 h-5 text-accent shrink-0" />
+              <p className="text-sm text-foreground">{t("checkout.smsCheckNotifications")}</p>
+            </div>
+
             <div className={`${inputClass} ${smsError ? "border-destructive" : ""}`}>
               <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
               <input
@@ -454,6 +459,13 @@ const CheckoutPage = () => {
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
                 </span>
+              </button>
+            </div>
+
+            <div className="flex justify-center">
+              <button onClick={() => { setSmsCode(""); setSmsError(""); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <RefreshCw className="w-4 h-4" />
+                {t("checkout.smsResend")}
               </button>
             </div>
 
