@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import VignettePage from "./pages/VignettePage";
 import CheckoutPage from "./pages/CheckoutPage";
 import ContactPage from "./pages/ContactPage";
+import TermsPage from "./pages/TermsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import ResponsibleDisclosurePage from "./pages/ResponsibleDisclosurePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +27,9 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/checkout" element={<CheckoutPage />} />
             <Route path="/contact" element={<ContactPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="/responsible-disclosure" element={<ResponsibleDisclosurePage />} />
             <Route path="/:slug" element={<VignettePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
