@@ -52,6 +52,7 @@ const CheckoutPage = () => {
   const [cvv, setCvv] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptNewsletter, setAcceptNewsletter] = useState(false);
+  const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
 
   if (!orderData) {
     return (
@@ -84,6 +85,24 @@ const CheckoutPage = () => {
     }
     setEmailError("");
     setStep(2);
+  };
+
+  const handlePayNow = () => {
+    const errors: Record<string, string> = {};
+    if (!cardholderName.trim()) errors.cardholderName = t("checkout.fieldRequired") || "Bu alan zorunludur";
+    const digits = cardNumber.replace(/\s/g, "");
+    if (digits.length < 13) errors.cardNumber = t("checkout.cardNumberInvalid") || "Geçerli bir kart numarası girin";
+    if (!/^\d{2}\/\d{2}$/.test(expiryDate)) {
+      errors.expiryDate = t("checkout.expiryInvalid") || "MM/YY formatında girin";
+    } else {
+      const [mm] = expiryDate.split("/").map(Number);
+      if (mm < 1 || mm > 12) errors.expiryDate = t("checkout.expiryInvalid") || "Geçersiz ay";
+    }
+    if (cvv.length < 3) errors.cvv = t("checkout.cvvInvalid") || "CVV en az 3 haneli olmalı";
+    if (!acceptTerms) errors.acceptTerms = t("checkout.termsRequired") || "Şartları kabul etmeniz gerekiyor";
+    setPaymentErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+    // Payment processing would go here
   };
 
   const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card overflow-hidden";
@@ -251,36 +270,54 @@ const CheckoutPage = () => {
               </div>
             </div>
 
-            <div className={inputClass}>
-              <User className="w-5 h-5 text-muted-foreground shrink-0" />
-              <input value={cardholderName} onChange={(e) => setCardholderName(e.target.value)} placeholder={t("checkout.cardholderName")} className={inputFieldClass} />
+            <div>
+              <div className={`${inputClass} ${paymentErrors.cardholderName ? "border-destructive" : ""}`}>
+                <User className="w-5 h-5 text-muted-foreground shrink-0" />
+                <input value={cardholderName} onChange={(e) => { setCardholderName(e.target.value); setPaymentErrors((prev) => { const { cardholderName: _, ...rest } = prev; return rest; }); }} placeholder={t("checkout.cardholderName")} className={inputFieldClass} />
+              </div>
+              {paymentErrors.cardholderName && <p className="text-xs text-destructive mt-1 px-1">{paymentErrors.cardholderName}</p>}
             </div>
 
             <div>
-              <div className={inputClass}>
+              <div className={`${inputClass} ${paymentErrors.cardNumber ? "border-destructive" : ""}`}>
                 <CreditCard className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
+                <input value={cardNumber} onChange={(e) => { setCardNumber(formatCardNumber(e.target.value)); setPaymentErrors((prev) => { const { cardNumber: _, ...rest } = prev; return rest; }); }} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
               </div>
+              {paymentErrors.cardNumber && <p className="text-xs text-destructive mt-1 px-1">{paymentErrors.cardNumber}</p>}
               <CardBrandLogos brand={detectCardBrand(cardNumber)} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
-                <Calendar className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={expiryDate} onChange={(e) => setExpiryDate(e.target.value)} placeholder={t("checkout.expiryDate")} className={inputFieldClass} maxLength={5} />
+              <div>
+                <div className={`${inputClass} ${paymentErrors.expiryDate ? "border-destructive" : ""}`}>
+                  <Calendar className="w-5 h-5 text-muted-foreground shrink-0" />
+                  <input value={expiryDate} onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, "");
+                    if (raw.length <= 2) { setExpiryDate(raw); }
+                    else { setExpiryDate(raw.slice(0, 2) + "/" + raw.slice(2, 4)); }
+                    setPaymentErrors((prev) => { const { expiryDate: _, ...rest } = prev; return rest; });
+                  }} placeholder="MM/YY" className={inputFieldClass} maxLength={5} />
+                </div>
+                {paymentErrors.expiryDate && <p className="text-xs text-destructive mt-1 px-1">{paymentErrors.expiryDate}</p>}
               </div>
-              <div className={inputClass}>
-                <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={cvv} onChange={(e) => setCvv(e.target.value)} placeholder={t("checkout.cvv")} className={inputFieldClass} maxLength={4} type="password" />
+              <div>
+                <div className={`${inputClass} ${paymentErrors.cvv ? "border-destructive" : ""}`}>
+                  <Lock className="w-5 h-5 text-muted-foreground shrink-0" />
+                  <input value={cvv} onChange={(e) => { setCvv(e.target.value.replace(/\D/g, "")); setPaymentErrors((prev) => { const { cvv: _, ...rest } = prev; return rest; }); }} placeholder={t("checkout.cvv")} className={inputFieldClass} maxLength={4} type="password" />
+                </div>
+                {paymentErrors.cvv && <p className="text-xs text-destructive mt-1 px-1">{paymentErrors.cvv}</p>}
               </div>
             </div>
 
-            <label className="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" checked={acceptTerms} onChange={(e) => setAcceptTerms(e.target.checked)} className="mt-1 accent-accent w-4 h-4" />
-              <span className="text-xs text-muted-foreground leading-relaxed">{t("checkout.termsText")}</span>
-            </label>
+            <div>
+              <label className={`flex items-start gap-3 cursor-pointer rounded-xl p-2 ${paymentErrors.acceptTerms ? "ring-1 ring-destructive" : ""}`}>
+                <input type="checkbox" checked={acceptTerms} onChange={(e) => { setAcceptTerms(e.target.checked); setPaymentErrors((prev) => { const { acceptTerms: _, ...rest } = prev; return rest; }); }} className="mt-1 accent-accent w-4 h-4" />
+                <span className="text-xs text-muted-foreground leading-relaxed">{t("checkout.termsText")}</span>
+              </label>
+              {paymentErrors.acceptTerms && <p className="text-xs text-destructive mt-1 px-1">{paymentErrors.acceptTerms}</p>}
+            </div>
 
-            <label className="flex items-start gap-3 cursor-pointer">
+            <label className="flex items-start gap-3 cursor-pointer p-2">
               <input type="checkbox" checked={acceptNewsletter} onChange={(e) => setAcceptNewsletter(e.target.checked)} className="mt-1 accent-accent w-4 h-4" />
               <span className="text-xs text-muted-foreground leading-relaxed">{t("checkout.newsletterText")}</span>
             </label>
@@ -291,7 +328,7 @@ const CheckoutPage = () => {
                   <p className="text-xl font-bold text-foreground">{t("checkout.total")}: {displayPrice}</p>
                   <p className="text-xs text-muted-foreground mt-1">{t("checkout.inclVat")}</p>
                 </div>
-                <button className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
+                <button onClick={handlePayNow} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
                   <span className="text-sm font-semibold">{t("checkout.payNow")}</span>
                   <span className="bg-accent rounded-full p-2">
                     <ArrowRight className="w-4 h-4 text-accent-foreground" />
