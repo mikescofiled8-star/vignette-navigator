@@ -101,7 +101,7 @@ const Header = () => {
               </div>
             )}
           </div>
-          <a href="#contact" className="hover:text-primary transition-colors">{t("nav.contact")}</a>
+          <Link to="/contact" className="hover:text-primary transition-colors">{t("nav.contact")}</Link>
         </nav>
 
         <button className="p-2 hover:bg-secondary rounded-lg transition-colors">
