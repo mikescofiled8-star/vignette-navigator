@@ -4,7 +4,7 @@ import { ArrowRight, ArrowLeft, Mail, User, Globe, Building, MapPin, CreditCard,
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useLanguageCurrency } from "@/contexts/LanguageCurrencyContext";
-import { CardBrandLogos } from "@/components/CardBrandIcons";
+import { CardBrandLogos, detectCardBrand, formatCardNumber } from "@/components/CardBrandIcons";
 
 interface OrderData {
   country: string;
@@ -259,9 +259,9 @@ const CheckoutPage = () => {
             <div>
               <div className={inputClass}>
                 <CreditCard className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
+                <input value={cardNumber} onChange={(e) => setCardNumber(formatCardNumber(e.target.value))} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
               </div>
-              <CardBrandLogos />
+              <CardBrandLogos brand={detectCardBrand(cardNumber)} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
