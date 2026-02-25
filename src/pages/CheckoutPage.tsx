@@ -35,6 +35,7 @@ const CheckoutPage = () => {
   const [accountType, setAccountType] = useState<"personal" | "business">("personal");
   const [email, setEmail] = useState("");
   const [confirmEmail, setConfirmEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -68,14 +69,24 @@ const CheckoutPage = () => {
   }
 
   const displayPrice = formatPrice(orderData.price);
-  const totalSteps = accountType === "business" ? 3 : 2;
-  const paymentStep = accountType === "business" ? 3 : 2;
+  // Step 1 = info (+ billing if business), Step 2 = payment
+  const totalSteps = 2;
 
-  const nextStep = () => { if (step < paymentStep) setStep(step + 1); };
-  const prevStep = () => { if (step > 1) setStep(step - 1); };
+  const validateAndNext = () => {
+    if (!email || !confirmEmail) {
+      setEmailError(t("checkout.emailRequired") || "Email is required");
+      return;
+    }
+    if (email !== confirmEmail) {
+      setEmailError(t("checkout.emailMismatch") || "Email addresses do not match");
+      return;
+    }
+    setEmailError("");
+    setStep(2);
+  };
 
   const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card overflow-hidden";
-  const inputFieldClass = "w-full min-w-0 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground truncate focus:truncate-none";
+  const inputFieldClass = "w-full min-w-0 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground";
 
   return (
     <div className="min-h-screen bg-background">
@@ -98,7 +109,7 @@ const CheckoutPage = () => {
 
         {/* Step indicator */}
         <div className="flex items-center gap-2 mb-8">
-          {Array.from({ length: paymentStep }).map((_, i) => (
+          {Array.from({ length: totalSteps }).map((_, i) => (
             <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors ${i < step ? "bg-accent" : "bg-border"}`} />
           ))}
         </div>
@@ -127,24 +138,93 @@ const CheckoutPage = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
+              <div className={`${inputClass} ${emailError ? "border-destructive" : ""}`}>
                 <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   {email && <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.email")}</span>}
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("checkout.email")} className={inputFieldClass} />
+                  <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); setEmailError(""); }} placeholder={t("checkout.email")} className={inputFieldClass} />
                 </div>
               </div>
-              <div className={inputClass}>
+              <div className={`${inputClass} ${emailError ? "border-destructive" : ""}`}>
                 <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
                 <div className="flex-1 min-w-0">
                   {confirmEmail && <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.confirmEmail")}</span>}
-                  <input type="email" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} placeholder={t("checkout.confirmEmail")} className={inputFieldClass} />
+                  <input type="email" value={confirmEmail} onChange={(e) => { setConfirmEmail(e.target.value); setEmailError(""); }} placeholder={t("checkout.confirmEmail")} className={inputFieldClass} />
                 </div>
               </div>
             </div>
+            {emailError && (
+              <p className="text-sm text-destructive font-medium -mt-3">{emailError}</p>
+            )}
+
+            {/* Business billing address - same step */}
+            {accountType === "business" && (
+              <>
+                <p className="text-sm font-medium text-muted-foreground">{t("checkout.billingAddress")}</p>
+
+                <div className={inputClass}>
+                  <Building className="w-5 h-5 text-muted-foreground shrink-0" />
+                  <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={t("checkout.companyName")} className={inputFieldClass} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={inputClass}>
+                    <User className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t("checkout.firstName")} className={inputFieldClass} />
+                  </div>
+                  <div className={inputClass}>
+                    <User className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("checkout.lastName")} className={inputFieldClass} />
+                  </div>
+                </div>
+
+                <div className="relative">
+                  <button onClick={() => setBillingCountryOpen((p) => !p)} className={`${inputClass} justify-between`}>
+                    <div className="flex items-center gap-3">
+                      <Globe className="w-5 h-5 text-muted-foreground shrink-0" />
+                      <span className={`text-sm ${billingCountry ? "text-foreground" : "text-muted-foreground"}`}>
+                        {billingCountry || t("checkout.country")}
+                      </span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-muted-foreground rotate-90" />
+                  </button>
+                  {billingCountryOpen && (
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-xl z-50 max-h-60 overflow-y-auto shadow-lg">
+                      {COUNTRIES.map((c) => (
+                        <button key={c} onClick={() => { setBillingCountry(c); setBillingCountryOpen(false); }} className={`block w-full text-left px-4 py-3 text-sm hover:bg-muted/50 ${billingCountry === c ? "bg-muted" : ""}`}>
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={inputClass}>
+                    <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={city} onChange={(e) => setCity(e.target.value)} placeholder={t("checkout.city")} className={inputFieldClass} />
+                  </div>
+                  <div className={inputClass}>
+                    <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder={t("checkout.postcode")} className={inputFieldClass} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className={inputClass}>
+                    <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t("checkout.streetName")} className={inputFieldClass} />
+                  </div>
+                  <div className={inputClass}>
+                    <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
+                    <input value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder={t("checkout.houseNumber")} className={inputFieldClass} />
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="flex justify-center pt-4">
-              <button onClick={nextStep} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
+              <button onClick={validateAndNext} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
                 <span className="text-sm font-semibold">{t("checkout.nextStep")}</span>
                 <span className="bg-accent rounded-full p-2">
                   <ArrowRight className="w-4 h-4 text-accent-foreground" />
@@ -154,114 +234,8 @@ const CheckoutPage = () => {
           </div>
         )}
 
-        {/* Step 2: Billing address (business only) */}
-        {step === 2 && accountType === "business" && (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold text-foreground">{t("checkout.info")}</h2>
-              <p className="text-sm text-muted-foreground mt-1">{t("checkout.emailNote")}</p>
-            </div>
-
-            <div className="flex rounded-xl overflow-hidden border border-border">
-              <button className="flex-1 py-3 text-sm font-semibold bg-card text-muted-foreground">{t("checkout.personal")}</button>
-              <button className="flex-1 py-3 text-sm font-semibold bg-accent text-accent-foreground">{t("checkout.business")}</button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
-                <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
-                <div className="flex-1">
-                  <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.email")}</span>
-                  <span className="text-sm text-foreground">{email}</span>
-                </div>
-              </div>
-              <div className={inputClass}>
-                <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
-                <div className="flex-1">
-                  <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.confirmEmail")}</span>
-                  <span className="text-sm text-foreground">{confirmEmail}</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-sm font-medium text-muted-foreground">{t("checkout.billingAddress")}</p>
-
-            <div className={inputClass}>
-              <Building className="w-5 h-5 text-muted-foreground shrink-0" />
-              <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder={t("checkout.companyName")} className={inputFieldClass} />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
-                <User className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} placeholder={t("checkout.firstName")} className={inputFieldClass} />
-              </div>
-              <div className={inputClass}>
-                <User className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} placeholder={t("checkout.lastName")} className={inputFieldClass} />
-              </div>
-            </div>
-
-            <div className="relative">
-              <button onClick={() => setBillingCountryOpen((p) => !p)} className={`${inputClass} justify-between`}>
-                <div className="flex items-center gap-3">
-                  <Globe className="w-5 h-5 text-muted-foreground shrink-0" />
-                  <span className={`text-sm ${billingCountry ? "text-foreground" : "text-muted-foreground"}`}>
-                    {billingCountry || t("checkout.country")}
-                  </span>
-                </div>
-                <ArrowRight className="w-4 h-4 text-muted-foreground rotate-90" />
-              </button>
-              {billingCountryOpen && (
-                <div className="absolute left-0 right-0 top-full mt-1 bg-card border border-border rounded-xl z-50 max-h-60 overflow-y-auto shadow-lg">
-                  {COUNTRIES.map((c) => (
-                    <button key={c} onClick={() => { setBillingCountry(c); setBillingCountryOpen(false); }} className={`block w-full text-left px-4 py-3 text-sm hover:bg-muted/50 ${billingCountry === c ? "bg-muted" : ""}`}>
-                      {c}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
-                <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={city} onChange={(e) => setCity(e.target.value)} placeholder={t("checkout.city")} className={inputFieldClass} />
-              </div>
-              <div className={inputClass}>
-                <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={postcode} onChange={(e) => setPostcode(e.target.value)} placeholder={t("checkout.postcode")} className={inputFieldClass} />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className={inputClass}>
-                <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={street} onChange={(e) => setStreet(e.target.value)} placeholder={t("checkout.streetName")} className={inputFieldClass} />
-              </div>
-              <div className={inputClass}>
-                <MapPin className="w-5 h-5 text-muted-foreground shrink-0" />
-                <input value={houseNumber} onChange={(e) => setHouseNumber(e.target.value)} placeholder={t("checkout.houseNumber")} className={inputFieldClass} />
-              </div>
-            </div>
-
-            <div className="flex justify-between pt-4">
-              <button onClick={prevStep} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
-                <ArrowLeft className="w-4 h-4" />
-                {t("checkout.back")}
-              </button>
-              <button onClick={nextStep} className="flex items-center gap-3 bg-foreground text-background rounded-full pl-6 pr-2 py-2 hover:opacity-90 transition-opacity">
-                <span className="text-sm font-semibold">{t("checkout.nextStep")}</span>
-                <span className="bg-accent rounded-full p-2">
-                  <ArrowRight className="w-4 h-4 text-accent-foreground" />
-                </span>
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Payment step */}
-        {step === paymentStep && (
+        {/* Step 2: Payment */}
+        {step === 2 && (
           <div className="space-y-6">
             <div>
               <h2 className="text-xl font-bold text-foreground">{t("checkout.payment")}</h2>
@@ -287,9 +261,9 @@ const CheckoutPage = () => {
                 <input value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} placeholder={t("checkout.cardNumber")} className={inputFieldClass} maxLength={19} />
               </div>
               <div className="flex items-center gap-2 mt-2 px-1">
-                <span className="text-xs font-bold text-orange-500">VISA</span>
-                <span className="text-xs font-bold text-red-500">MC</span>
-                <span className="text-xs font-bold text-blue-500">AMEX</span>
+                <span className="text-xs font-bold text-[hsl(var(--accent))]">VISA</span>
+                <span className="text-xs font-bold text-destructive">MC</span>
+                <span className="text-xs font-bold text-primary">AMEX</span>
               </div>
             </div>
 
@@ -333,7 +307,7 @@ const CheckoutPage = () => {
             </div>
 
             <div className="flex justify-start">
-              <button onClick={prevStep} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => setStep(1)} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <ArrowLeft className="w-4 h-4" />
                 {t("checkout.back")}
               </button>
