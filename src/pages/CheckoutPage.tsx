@@ -74,8 +74,8 @@ const CheckoutPage = () => {
   const nextStep = () => { if (step < paymentStep) setStep(step + 1); };
   const prevStep = () => { if (step > 1) setStep(step - 1); };
 
-  const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card";
-  const inputFieldClass = "flex-1 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground";
+  const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card overflow-hidden";
+  const inputFieldClass = "w-full min-w-0 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground truncate focus:truncate-none";
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,14 +129,14 @@ const CheckoutPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div className={inputClass}>
                 <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   {email && <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.email")}</span>}
                   <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder={t("checkout.email")} className={inputFieldClass} />
                 </div>
               </div>
               <div className={inputClass}>
                 <Mail className="w-5 h-5 text-muted-foreground shrink-0" />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   {confirmEmail && <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("checkout.confirmEmail")}</span>}
                   <input type="email" value={confirmEmail} onChange={(e) => setConfirmEmail(e.target.value)} placeholder={t("checkout.confirmEmail")} className={inputFieldClass} />
                 </div>
