@@ -69,6 +69,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState<typeof REGISTRATION_COUNTRIES[0] | null>(null);
   const [licensePlate, setLicensePlate] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   const activeVehicleIndex = selectedVehicleIndex ?? 0;
 
@@ -196,39 +197,43 @@ const OrderForm = ({ data }: OrderFormProps) => {
 
         {/* Start date */}
         {showStartDate && (
-          <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
-            <PopoverTrigger asChild>
-              <button className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Clock className="w-5 h-5 text-muted-foreground" />
-                  <div>
-                    {startDate ? (
-                      <>
-                        <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("order.startDate")}</span>
-                        <span className="text-sm text-foreground">{format(startDate, "PPP")}</span>
-                      </>
-                    ) : (
-                      <span className="text-sm text-muted-foreground">{t("order.startDate")}</span>
-                    )}
+          <>
+            <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+              <PopoverTrigger asChild>
+                <button className={`flex items-center justify-between w-full border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors ${formErrors.startDate ? "border-destructive" : "border-border"}`}>
+                  <div className="flex items-center gap-3">
+                    <Clock className="w-5 h-5 text-muted-foreground" />
+                    <div>
+                      {startDate ? (
+                        <>
+                          <span className="text-xs text-muted-foreground block leading-none mb-0.5">{t("order.startDate")}</span>
+                          <span className="text-sm text-foreground">{format(startDate, "PPP")}</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">{t("order.startDate")}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-muted-foreground" />
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarWidget
-                mode="single"
-                selected={startDate}
-                onSelect={(date) => {
-                  setStartDate(date);
-                  if (date) setCalendarOpen(false);
-                }}
-                disabled={(d) => d < new Date()}
-                initialFocus
-                className={cn("p-3 pointer-events-auto")}
-              />
-            </PopoverContent>
-          </Popover>
+                  <ChevronDown className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <CalendarWidget
+                  mode="single"
+                  selected={startDate}
+                  onSelect={(date) => {
+                    setStartDate(date);
+                    setFormErrors((prev) => { const { startDate: _, ...rest } = prev; return rest; });
+                    if (date) setCalendarOpen(false);
+                  }}
+                  disabled={(d) => d < new Date()}
+                  initialFocus
+                  className={cn("p-3 pointer-events-auto")}
+                />
+              </PopoverContent>
+            </Popover>
+            {formErrors.startDate && <p className="text-xs text-destructive mt-1 px-1">{formErrors.startDate}</p>}
+          </>
         )}
 
         {/* Validity period display */}
@@ -246,7 +251,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
           <div className="relative z-10">
             <button
               onClick={() => { closeAllDropdowns(); setCountryOpen((prev) => !prev); }}
-              className="flex items-center justify-between w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors"
+              className={`flex items-center justify-between w-full border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors ${formErrors.country ? "border-destructive" : "border-border"}`}
             >
               <div className="flex items-center gap-3">
                 <Globe className="w-5 h-5 text-muted-foreground" />
@@ -269,7 +274,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
                 {REGISTRATION_COUNTRIES.map((country) => (
                   <button
                     key={country.code}
-                    onClick={() => { setSelectedCountry(country); setCountryOpen(false); }}
+                    onClick={() => { setSelectedCountry(country); setCountryOpen(false); setFormErrors((prev) => { const { country: _, ...rest } = prev; return rest; }); }}
                     className={`flex items-center gap-3 w-full text-left px-4 py-3 text-sm hover:bg-muted/50 transition-colors ${selectedCountry?.code === country.code ? "bg-muted" : ""}`}
                   >
                     <Globe className="w-4 h-4 text-muted-foreground" />
@@ -278,6 +283,7 @@ const OrderForm = ({ data }: OrderFormProps) => {
                 ))}
               </div>
             )}
+            {formErrors.country && <p className="text-xs text-destructive mt-1 px-1">{formErrors.country}</p>}
           </div>
         )}
 
@@ -311,6 +317,19 @@ const OrderForm = ({ data }: OrderFormProps) => {
         )}
         <button
           onClick={() => {
+            const errors: Record<string, string> = {};
+            if (!startDate && showStartDate) {
+              errors.startDate = t("order.startDateRequired");
+              setCalendarOpen(true);
+            }
+            if (!selectedCountry && showExtras) {
+              errors.country = t("order.countryRequired");
+            }
+            if (!licensePlate && showExtras && selectedCountry) {
+              errors.licensePlate = t("order.licensePlateRequired");
+            }
+            setFormErrors(errors);
+            if (Object.keys(errors).length > 0) return;
             if (!price || !selectedVehicleLabel || !validityPeriod || !startDate || !endDate || !selectedCountry || !licensePlate) return;
             navigate("/checkout", {
               state: {
